@@ -24,6 +24,7 @@ std::atomic<bool> g_hw_shader_enabled;
 std::atomic<bool> g_hw_shader_accurate_gs;
 std::atomic<bool> g_hw_shader_accurate_mul;
 std::atomic<bool> g_renderer_bg_color_update_requested;
+std::atomic<bool> g_use_format_reinterpret_hack;
 // Screenshot
 std::atomic<bool> g_renderer_screenshot_requested;
 void* g_screenshot_bits;
