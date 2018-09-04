@@ -41,7 +41,8 @@ MICROPROFILE_DEFINE(OpenGL_CacheManagement, "OpenGL", "Cache Mgmt", MP_RGB(100, 
 
 static bool IsVendorAmd() {
     std::string gpu_vendor{reinterpret_cast<char const*>(glGetString(GL_VENDOR))};
-    return gpu_vendor == "ATI Technologies Inc." || gpu_vendor == "Advanced Micro Devices, Inc.";
+    std::string gpu_renderer{reinterpret_cast<char const*>(glGetString(GL_RENDERER))};
+    return gpu_vendor == "ATI Technologies Inc." || gpu_vendor == "Advanced Micro Devices, Inc." || gpu_renderer == "Intel(R) HD Graphics 4600" || gpu_renderer == "Intel(R) HD Graphics 4400";
 }
 
 RasterizerOpenGL::RasterizerOpenGL(Frontend::EmuWindow& window)
