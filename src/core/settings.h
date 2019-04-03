@@ -166,6 +166,8 @@ struct Values {
     bool toggle_3d;
     std::atomic<u8> factor_3d;
 
+    bool dump_textures;
+
     // Audio
     bool enable_dsp_lle;
     bool enable_dsp_lle_multithread;
