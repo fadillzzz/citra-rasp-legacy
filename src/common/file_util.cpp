@@ -721,6 +721,7 @@ void SetUserPath(const std::string& path) {
     g_paths.emplace(UserPath::LogDir, user_path + LOG_DIR DIR_SEP);
     g_paths.emplace(UserPath::CheatsDir, user_path + CHEATS_DIR DIR_SEP);
     g_paths.emplace(UserPath::DLLDir, user_path + DLL_DIR DIR_SEP);
+    g_paths.emplace(UserPath::DumpDir, user_path + DUMP_DIR DIR_SEP);
 }
 
 // Returns a string with a Citra data dir or file in the user's home
