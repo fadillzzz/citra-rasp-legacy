@@ -865,7 +865,6 @@ void CachedSurface::UploadGLTexture(const Common::Rectangle<u32>& rect, GLuint r
     ASSERT(gl_buffer_size == width * height * GetGLBytesPerPixel(pixel_format));
 
     // Decode and dump texture if texture dumping is enabled
-    // note: remember to remove that pixel format check later
     bool should_dump = false;
     std::string dump_path;
     if (Settings::values.dump_textures) {
