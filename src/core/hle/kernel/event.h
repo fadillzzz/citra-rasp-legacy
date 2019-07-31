@@ -25,7 +25,7 @@ public:
         this->name = name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::Event;
+    static constexpr HandleType HANDLE_TYPE = HandleType::Event;
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }
@@ -34,7 +34,7 @@ public:
         return reset_type;
     }
 
-    bool ShouldWait(Thread* thread) const override;
+    bool ShouldWait(const Thread* thread) const override;
     void Acquire(Thread* thread) override;
 
     void WakeupAllWaitingThreads() override;

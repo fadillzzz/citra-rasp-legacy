@@ -100,8 +100,11 @@ ResultStatus AppLoader_NCCH::LoadExec(std::shared_ptr<Kernel::Process>& process)
             overlay_ncch->exheader_header.codeset_info.data.num_max_pages * Memory::PAGE_SIZE +
             bss_page_size;
 
+        // Apply any IPS patch now that the entire codeset (including .bss) has been allocated
+        overlay_ncch->ApplyIPSPatch(code);
+
         codeset->entrypoint = codeset->CodeSegment().addr;
-        codeset->memory = std::make_shared<std::vector<u8>>(std::move(code));
+        codeset->memory = std::move(code);
 
         process = Core::System::GetInstance().Kernel().CreateProcess(std::move(codeset));
 
@@ -172,7 +175,8 @@ ResultStatus AppLoader_NCCH::Load(std::shared_ptr<Kernel::Process>& process) {
         overlay_ncch = &update_ncch;
     }
 
-    Core::Telemetry().AddField(Telemetry::FieldType::Session, "ProgramId", program_id);
+    auto& system = Core::System::GetInstance();
+    system.TelemetrySession().AddField(Telemetry::FieldType::Session, "ProgramId", program_id);
 
     if (auto room_member = Network::GetRoomMember().lock()) {
         Network::GameInfo game_info;
@@ -187,7 +191,7 @@ ResultStatus AppLoader_NCCH::Load(std::shared_ptr<Kernel::Process>& process) {
     if (ResultStatus::Success != result)
         return result;
 
-    Core::System::GetInstance().ArchiveManager().RegisterSelfNCCH(*this);
+    system.ArchiveManager().RegisterSelfNCCH(*this);
 
     ParseRegionLockoutInfo();
 

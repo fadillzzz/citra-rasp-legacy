@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <QWidget>
-#include "core/settings.h"
 
 namespace Ui {
 class ConfigureHotkeys;
@@ -22,8 +21,8 @@ public:
     explicit ConfigureHotkeys(QWidget* parent = nullptr);
     ~ConfigureHotkeys();
 
-    void applyConfiguration(HotkeyRegistry& registry);
-    void retranslateUi();
+    void ApplyConfiguration(HotkeyRegistry& registry);
+    void RetranslateUI();
 
     void EmitHotkeysChanged();
 
@@ -42,8 +41,8 @@ signals:
 
 private:
     void Configure(QModelIndex index);
-    bool IsUsedKey(QKeySequence key_sequence);
-    QList<QKeySequence> GetUsedKeyList();
+    bool IsUsedKey(QKeySequence key_sequence) const;
+    QList<QKeySequence> GetUsedKeyList() const;
 
     std::unique_ptr<Ui::ConfigureHotkeys> ui;
 

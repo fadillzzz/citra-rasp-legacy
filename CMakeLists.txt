@@ -102,7 +102,7 @@ endif()
 message(STATUS "Target architecture: ${ARCHITECTURE}")
 
 
-# Configure compilation flags
+# Configure C++ standard
 # ===========================
 
 set(CMAKE_CXX_STANDARD 17)
@@ -111,75 +111,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set up output paths for executable binaries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
-
-if (NOT MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-
-    if (MINGW)
-        add_definitions(-DMINGW_HAS_SECURE_API)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -gdwarf")
-
-        if (MINGW_STATIC_BUILD)
-            add_definitions(-DQT_STATICPLUGIN)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
-            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
-        endif()
-    endif()
-else()
-    # Silence "deprecation" warnings
-    add_definitions(/D_CRT_SECURE_NO_WARNINGS /D_CRT_NONSTDC_NO_DEPRECATE /D_SCL_SECURE_NO_WARNINGS)
-    # Avoid windows.h junk
-    add_definitions(/DNOMINMAX)
-    # Avoid windows.h from including some usually unused libs like winsocks.h, since this might cause some redefinition errors.
-    add_definitions(/DWIN32_LEAN_AND_MEAN)
-
-    set(CMAKE_CONFIGURATION_TYPES Debug Release CACHE STRING "" FORCE)
-
-    # Tweak optimization settings
-    # As far as I can tell, there's no way to override the CMake defaults while leaving user
-    # changes intact, so we'll just clobber everything and say sorry.
-    message(STATUS "Cache compiler flags ignored, please edit CMakeLists.txt to change the flags.")
-
-    # /W3 - Level 3 warnings
-    # /MP - Multi-threaded compilation
-    # /Zi - Output debugging information
-    # /Zo - enhanced debug info for optimized builds
-    # /permissive- - enables stricter C++ standards conformance checks
-    set(CMAKE_C_FLAGS   "/W3 /MP /Zi /Zo /permissive-" CACHE STRING "" FORCE)
-    # /EHsc - C++-only exception handling semantics
-    # /std:c++latest - Latest available C++ standard
-    # /Zc:throwingNew - let codegen assume `operator new` will never return null
-    # /Zc:inline - let codegen omit inline functions in object files
-    set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} /EHsc /std:c++latest /Zc:throwingNew,inline" CACHE STRING "" FORCE)
-
-    # /MDd - Multi-threaded Debug Runtime DLL
-    set(CMAKE_C_FLAGS_DEBUG   "/Od /MDd" CACHE STRING "" FORCE)
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}" CACHE STRING "" FORCE)
-
-    # /O2 - Optimization level 2
-    # /GS- - No stack buffer overflow checks
-    # /MD - Multi-threaded runtime DLL
-    set(CMAKE_C_FLAGS_RELEASE   "/O2 /GS- /MD" CACHE STRING "" FORCE)
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-
-    set(CMAKE_EXE_LINKER_FLAGS_DEBUG   "/DEBUG /MANIFEST:NO" CACHE STRING "" FORCE)
-    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /MANIFEST:NO /INCREMENTAL:NO /OPT:REF,ICF" CACHE STRING "" FORCE)
-endif()
-
-# Set file offset size to 64 bits.
-#
-# On modern Unixes, this is typically already the case. The lone exception is
-# glibc, which may default to 32 bits. glibc allows this to be configured
-# by setting _FILE_OFFSET_BITS.
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR MINGW)
-    add_definitions(-D_FILE_OFFSET_BITS=64)
-endif()
-
-add_definitions(-DSINGLETHREADED)
-# CMake seems to only define _DEBUG on Windows
-set_property(DIRECTORY APPEND PROPERTY
-    COMPILE_DEFINITIONS $<$<CONFIG:Debug>:_DEBUG> $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
 
 # System imported libraries
 # ======================
@@ -201,7 +132,7 @@ find_package(Threads REQUIRED)
 if (ENABLE_SDL2)
     if (CITRA_USE_BUNDLED_SDL2)
         # Detect toolchain and platform
-        if ((MSVC_VERSION GREATER_EQUAL 1910 AND MSVC_VERSION LESS 1920) AND ARCHITECTURE_x86_64)
+        if ((MSVC_VERSION GREATER_EQUAL 1910 AND MSVC_VERSION LESS 1930) AND ARCHITECTURE_x86_64)
             set(SDL2_VER "SDL2-2.0.8")
         else()
             message(FATAL_ERROR "No bundled SDL2 binaries for your toolchain. Disable CITRA_USE_BUNDLED_SDL2 and provide your own.")
@@ -231,7 +162,7 @@ endif()
 
 if (ENABLE_QT)
     if (CITRA_USE_BUNDLED_QT)
-        if ((MSVC_VERSION GREATER_EQUAL 1910 AND MSVC_VERSION LESS 1920) AND ARCHITECTURE_x86_64)
+        if ((MSVC_VERSION GREATER_EQUAL 1910 AND MSVC_VERSION LESS 1930) AND ARCHITECTURE_x86_64)
             set(QT_VER qt-5.10.0-msvc2017_64)
         else()
             message(FATAL_ERROR "No bundled Qt binaries for your toolchain. Disable CITRA_USE_BUNDLED_QT and provide your own.")
@@ -257,7 +188,7 @@ endif()
 
 if (ENABLE_FFMPEG)
     if (CITRA_USE_BUNDLED_FFMPEG)
-        if ((MSVC_VERSION GREATER_EQUAL 1910 AND MSVC_VERSION LESS 1920) AND ARCHITECTURE_x86_64)
+        if ((MSVC_VERSION GREATER_EQUAL 1910 AND MSVC_VERSION LESS 1930) AND ARCHITECTURE_x86_64)
             set(FFmpeg_VER "ffmpeg-4.0.2-msvc")
         else()
             message(FATAL_ERROR "No bundled FFmpeg binaries for your toolchain. Disable CITRA_USE_BUNDLED_FFMPEG and provide your own.")
@@ -283,25 +214,21 @@ endif()
 # Platform-specific library requirements
 # ======================================
 
-IF (APPLE)
-    find_library(COCOA_LIBRARY Cocoa)           # Umbrella framework for everything GUI-related
+if (APPLE)
+    # Umbrella framework for everything GUI-related
+    find_library(COCOA_LIBRARY Cocoa)
     set(PLATFORM_LIBRARIES ${COCOA_LIBRARY} ${IOKIT_LIBRARY} ${COREVIDEO_LIBRARY})
-
-    if (CMAKE_CXX_COMPILER_ID STREQUAL Clang)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
-    endif()
-ELSEIF (WIN32)
+elseif (WIN32)
     # WSAPoll and SHGetKnownFolderPath (AppData/Roaming) didn't exist before WinNT 6.x (Vista)
     add_definitions(-D_WIN32_WINNT=0x0600 -DWINVER=0x0600)
     set(PLATFORM_LIBRARIES winmm ws2_32)
-    IF (MINGW)
+    if (MINGW)
         # PSAPI is the Process Status API
         set(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} psapi imm32 version)
-    ENDIF (MINGW)
-ELSEIF (CMAKE_SYSTEM_NAME MATCHES "^(Linux|kFreeBSD|GNU|SunOS)$")
+    endif()
+elseif (CMAKE_SYSTEM_NAME MATCHES "^(Linux|kFreeBSD|GNU|SunOS)$")
     set(PLATFORM_LIBRARIES rt)
-ENDIF (APPLE)
+endif()
 
 # Setup a custom clang-format target (if clang-format can be found) that will run
 # against all the src files. This should be used before making a pull request.

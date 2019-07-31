@@ -189,9 +189,9 @@ ChatRoom::ChatRoom(QWidget* parent) : QWidget(parent), ui(std::make_unique<Ui::C
     // Connect all the widgets to the appropriate events
     connect(ui->player_view, &QTreeView::customContextMenuRequested, this,
             &ChatRoom::PopupContextMenu);
-    connect(ui->chat_message, &QLineEdit::returnPressed, ui->send_message, &QPushButton::pressed);
-    connect(ui->chat_message, &QLineEdit::textChanged, this, &::ChatRoom::OnChatTextChanged);
-    connect(ui->send_message, &QPushButton::pressed, this, &ChatRoom::OnSendChat);
+    connect(ui->chat_message, &QLineEdit::returnPressed, this, &ChatRoom::OnSendChat);
+    connect(ui->chat_message, &QLineEdit::textChanged, this, &ChatRoom::OnChatTextChanged);
+    connect(ui->send_message, &QPushButton::clicked, this, &ChatRoom::OnSendChat);
 }
 
 ChatRoom::~ChatRoom() = default;
@@ -406,8 +406,9 @@ void ChatRoom::SetPlayerList(const Network::RoomMember::MemberList& member_list)
 }
 
 void ChatRoom::OnChatTextChanged() {
-    if (ui->chat_message->text().length() > Network::MaxMessageSize)
-        ui->chat_message->setText(ui->chat_message->text().left(Network::MaxMessageSize));
+    if (ui->chat_message->text().length() > static_cast<int>(Network::MaxMessageSize))
+        ui->chat_message->setText(
+            ui->chat_message->text().left(static_cast<int>(Network::MaxMessageSize)));
 }
 
 void ChatRoom::PopupContextMenu(const QPoint& menu_location) {
@@ -425,7 +426,7 @@ void ChatRoom::PopupContextMenu(const QPoint& menu_location) {
         QAction* view_profile_action = context_menu.addAction(tr("View Profile"));
         connect(view_profile_action, &QAction::triggered, [username] {
             QDesktopServices::openUrl(
-                QString("https://community.citra-emu.org/u/%1").arg(username));
+                QUrl(QString("https://community.citra-emu.org/u/%1").arg(username)));
         });
     }
 

@@ -71,8 +71,7 @@ void FS_USER::OpenFile(Kernel::HLERequestContext& ctx) {
         LOG_ERROR(Service_FS, "failed to get a handle for file {}", file_path.DebugStr());
     }
 
-    ctx.SleepClientThread(Kernel::SharedFrom(system.Kernel().GetThreadManager().GetCurrentThread()),
-                          "fs_user::open", open_timeout_ns,
+    ctx.SleepClientThread("fs_user::open", open_timeout_ns,
                           [](std::shared_ptr<Kernel::Thread> /*thread*/,
                              Kernel::HLERequestContext& /*ctx*/,
                              Kernel::ThreadWakeupReason /*reason*/) {
@@ -130,8 +129,7 @@ void FS_USER::OpenFileDirectly(Kernel::HLERequestContext& ctx) {
                   file_path.DebugStr(), mode.hex, attributes);
     }
 
-    ctx.SleepClientThread(Kernel::SharedFrom(system.Kernel().GetThreadManager().GetCurrentThread()),
-                          "fs_user::open_directly", open_timeout_ns,
+    ctx.SleepClientThread("fs_user::open_directly", open_timeout_ns,
                           [](std::shared_ptr<Kernel::Thread> /*thread*/,
                              Kernel::HLERequestContext& /*ctx*/,
                              Kernel::ThreadWakeupReason /*reason*/) {
@@ -308,9 +306,9 @@ void FS_USER::OpenDirectory(Kernel::HLERequestContext& ctx) {
     rb.Push(dir_res.Code());
     if (dir_res.Succeeded()) {
         std::shared_ptr<Directory> directory = *dir_res;
-        auto sessions = system.Kernel().CreateSessionPair(directory->GetName());
-        directory->ClientConnected(std::get<std::shared_ptr<ServerSession>>(sessions));
-        rb.PushMoveObjects(std::get<std::shared_ptr<ClientSession>>(sessions));
+        auto [server, client] = system.Kernel().CreateSessionPair(directory->GetName());
+        directory->ClientConnected(server);
+        rb.PushMoveObjects(client);
     } else {
         LOG_ERROR(Service_FS, "failed to get a handle for directory type={} size={} data={}",
                   static_cast<u32>(dirname_type), dirname_size, dir_path.DebugStr());

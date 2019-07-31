@@ -2,6 +2,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the license.txt file included.
 
+#include <cstring>
 #include <QMessageBox>
 #include "citra_qt/configuration/configure_system.h"
 #include "citra_qt/ui_settings.h"
@@ -227,7 +228,7 @@ ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::
     connect(ui->button_regenerate_console_id, &QPushButton::clicked, this,
             &ConfigureSystem::RefreshConsoleID);
     for (u8 i = 0; i < country_names.size(); i++) {
-        if (country_names.at(i) != "") {
+        if (std::strcmp(country_names.at(i), "") != 0) {
             ui->combo_country->addItem(tr(country_names.at(i)), i);
         }
     }
@@ -237,7 +238,7 @@ ConfigureSystem::ConfigureSystem(QWidget* parent) : QWidget(parent), ui(new Ui::
 
 ConfigureSystem::~ConfigureSystem() = default;
 
-void ConfigureSystem::setConfiguration() {
+void ConfigureSystem::SetConfiguration() {
     enabled = !Core::System::GetInstance().IsPoweredOn();
 
     ui->combo_init_clock->setCurrentIndex(static_cast<u8>(Settings::values.init_clock));
@@ -297,9 +298,10 @@ void ConfigureSystem::ReadSystemSettings() {
     ui->spinBox_play_coins->setValue(play_coin);
 }
 
-void ConfigureSystem::applyConfiguration() {
-    if (!enabled)
+void ConfigureSystem::ApplyConfiguration() {
+    if (!enabled) {
         return;
+    }
 
     bool modified = false;
 
@@ -349,8 +351,9 @@ void ConfigureSystem::applyConfiguration() {
     }
 
     // update the config savegame if any item is modified.
-    if (modified)
+    if (modified) {
         cfg->UpdateConfigNANDSavegame();
+    }
 
     Settings::values.init_clock =
         static_cast<Settings::InitClock>(ui->combo_init_clock->currentIndex());
@@ -386,10 +389,10 @@ void ConfigureSystem::UpdateBirthdayComboBox(int birthmonth_index) {
 void ConfigureSystem::ConfigureTime() {
     ui->edit_init_time->setCalendarPopup(true);
     QDateTime dt;
-    dt.fromString("2000-01-01 00:00:01", "yyyy-MM-dd hh:mm:ss");
+    dt.fromString(QStringLiteral("2000-01-01 00:00:01"), QStringLiteral("yyyy-MM-dd hh:mm:ss"));
     ui->edit_init_time->setMinimumDateTime(dt);
 
-    this->setConfiguration();
+    SetConfiguration();
 
     UpdateInitTime(ui->combo_init_clock->currentIndex());
 }
@@ -409,8 +412,10 @@ void ConfigureSystem::RefreshConsoleID() {
                               "if you use an outdated config savegame. Continue?");
     reply = QMessageBox::critical(this, tr("Warning"), warning_text,
                                   QMessageBox::No | QMessageBox::Yes);
-    if (reply == QMessageBox::No)
+    if (reply == QMessageBox::No) {
         return;
+    }
+
     u32 random_number;
     u64 console_id;
     cfg->GenerateConsoleUniqueId(random_number, console_id);
@@ -420,6 +425,6 @@ void ConfigureSystem::RefreshConsoleID() {
         tr("Console ID: 0x%1").arg(QString::number(console_id, 16).toUpper()));
 }
 
-void ConfigureSystem::retranslateUi() {
+void ConfigureSystem::RetranslateUI() {
     ui->retranslateUi(this);
 }

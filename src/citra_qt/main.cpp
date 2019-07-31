@@ -16,6 +16,7 @@
 #include <QtWidgets>
 #include <fmt/format.h>
 #include "citra_qt/aboutdialog.h"
+#include "citra_qt/applets/mii_selector.h"
 #include "citra_qt/applets/swkbd.h"
 #include "citra_qt/bootmanager.h"
 #include "citra_qt/camera/qt_multimedia_camera.h"
@@ -505,6 +506,8 @@ void GMainWindow::ConnectWidgetEvents() {
     connect(game_list_placeholder, &GameListPlaceholder::AddDirectory, this,
             &GMainWindow::OnGameListAddDirectory);
     connect(game_list, &GameList::ShowList, this, &GMainWindow::OnGameListShowList);
+    connect(game_list, &GameList::PopulatingCompleted,
+            [this] { multiplayer_state->UpdateGameList(game_list->GetModel()); });
 
     connect(this, &GMainWindow::EmulationStarting, render_window,
             &GRenderWindow::OnEmulationStarting);
@@ -798,7 +801,7 @@ bool GMainWindow::LoadROM(const QString& filename) {
 
     game_path = filename;
 
-    Core::Telemetry().AddField(Telemetry::FieldType::App, "Frontend", "Qt");
+    system.TelemetrySession().AddField(Telemetry::FieldType::App, "Frontend", "Qt");
     return true;
 }
 
@@ -1334,8 +1337,9 @@ void GMainWindow::OnCheats() {
 }
 
 void GMainWindow::OnConfigure() {
-    ConfigureDialog configureDialog(this, hotkey_registry);
-    connect(&configureDialog, &ConfigureDialog::languageChanged, this,
+    ConfigureDialog configureDialog(this, hotkey_registry,
+                                    !multiplayer_state->IsHostingPublicRoom());
+    connect(&configureDialog, &ConfigureDialog::LanguageChanged, this,
             &GMainWindow::OnLanguageChanged);
     auto old_theme = UISettings::values.theme;
     const int old_input_profile_index = Settings::values.current_input_profile_index;
@@ -1343,12 +1347,14 @@ void GMainWindow::OnConfigure() {
     const bool old_discord_presence = UISettings::values.enable_discord_presence;
     auto result = configureDialog.exec();
     if (result == QDialog::Accepted) {
-        configureDialog.applyConfiguration();
+        configureDialog.ApplyConfiguration();
         InitializeHotkeys();
         if (UISettings::values.theme != old_theme)
             UpdateUITheme();
         if (UISettings::values.enable_discord_presence != old_discord_presence)
             SetDiscordEnabled(UISettings::values.enable_discord_presence);
+        if (!multiplayer_state->IsHostingPublicRoom())
+            multiplayer_state->UpdateCredentials();
         emit UpdateThemedIcons();
         SyncMenuUISettings();
         game_list->RefreshGameDirectory();
@@ -1644,7 +1650,7 @@ void GMainWindow::OnCoreError(Core::System::ResultStatus result, std::string det
     message_box.setWindowTitle(title);
     message_box.setText(message);
     message_box.setIcon(QMessageBox::Icon::Critical);
-    QPushButton* continue_button = message_box.addButton(tr("Continue"), QMessageBox::RejectRole);
+    message_box.addButton(tr("Continue"), QMessageBox::RejectRole);
     QPushButton* abort_button = message_box.addButton(tr("Abort"), QMessageBox::AcceptRole);
     if (result != Core::System::ResultStatus::ShutdownRequested)
         message_box.exec();
@@ -1896,7 +1902,8 @@ int main(int argc, char* argv[]) {
 
     // Register frontend applets
     Frontend::RegisterDefaultApplets();
-    Frontend::RegisterSoftwareKeyboard(std::make_shared<QtKeyboard>(main_window));
+    Core::System::GetInstance().RegisterMiiSelector(std::make_shared<QtMiiSelector>(main_window));
+    Core::System::GetInstance().RegisterSoftwareKeyboard(std::make_shared<QtKeyboard>(main_window));
 
     main_window.show();
     int result = app.exec();

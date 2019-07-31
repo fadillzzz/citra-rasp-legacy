@@ -35,7 +35,7 @@ void ConfigureHotkeys::EmitHotkeysChanged() {
     emit HotkeysChanged(GetUsedKeyList());
 }
 
-QList<QKeySequence> ConfigureHotkeys::GetUsedKeyList() {
+QList<QKeySequence> ConfigureHotkeys::GetUsedKeyList() const {
     QList<QKeySequence> list;
     for (int r = 0; r < model->rowCount(); r++) {
         QStandardItem* parent = model->item(r, 0);
@@ -70,35 +70,36 @@ void ConfigureHotkeys::OnInputKeysChanged(QList<QKeySequence> new_key_list) {
 }
 
 void ConfigureHotkeys::Configure(QModelIndex index) {
-    if (index.parent() == QModelIndex())
+    if (!index.parent().isValid()) {
         return;
+    }
 
     index = index.sibling(index.row(), 1);
-    auto* model = ui->hotkey_list->model();
-    auto previous_key = model->data(index);
+    auto* const model = ui->hotkey_list->model();
+    const auto previous_key = model->data(index);
 
-    auto* hotkey_dialog = new SequenceDialog;
-    int return_code = hotkey_dialog->exec();
+    SequenceDialog hotkey_dialog{this};
 
-    auto key_sequence = hotkey_dialog->GetSequence();
-
-    if (return_code == QDialog::Rejected || key_sequence.isEmpty())
+    const int return_code = hotkey_dialog.exec();
+    const auto key_sequence = hotkey_dialog.GetSequence();
+    if (return_code == QDialog::Rejected || key_sequence.isEmpty()) {
         return;
+    }
 
     if (IsUsedKey(key_sequence) && key_sequence != QKeySequence(previous_key.toString())) {
-        QMessageBox::critical(this, tr("Error in inputted key"),
-                              tr("You're using a key that's already bound."));
+        QMessageBox::warning(this, tr("Conflicting Key Sequence"),
+                             tr("The entered key sequence is already assigned to another hotkey."));
     } else {
         model->setData(index, key_sequence.toString(QKeySequence::NativeText));
         EmitHotkeysChanged();
     }
 }
 
-bool ConfigureHotkeys::IsUsedKey(QKeySequence key_sequence) {
+bool ConfigureHotkeys::IsUsedKey(QKeySequence key_sequence) const {
     return input_keys_list.contains(key_sequence) || GetUsedKeyList().contains(key_sequence);
 }
 
-void ConfigureHotkeys::applyConfiguration(HotkeyRegistry& registry) {
+void ConfigureHotkeys::ApplyConfiguration(HotkeyRegistry& registry) {
     for (int key_id = 0; key_id < model->rowCount(); key_id++) {
         QStandardItem* parent = model->item(key_id, 0);
         for (int key_column_id = 0; key_column_id < parent->rowCount(); key_column_id++) {
@@ -117,9 +118,8 @@ void ConfigureHotkeys::applyConfiguration(HotkeyRegistry& registry) {
     }
 
     registry.SaveHotkeys();
-    Settings::Apply();
 }
 
-void ConfigureHotkeys::retranslateUi() {
+void ConfigureHotkeys::RetranslateUI() {
     ui->retranslateUi(this);
 }

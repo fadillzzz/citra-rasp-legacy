@@ -13,22 +13,18 @@
 
 ConfigureGraphics::ConfigureGraphics(QWidget* parent)
     : QWidget(parent), ui(new Ui::ConfigureGraphics) {
-
     ui->setupUi(this);
-    this->setConfiguration();
+    SetConfiguration();
 
-    ui->frame_limit->setEnabled(Settings::values.use_frame_limit);
-    connect(ui->toggle_frame_limit, &QCheckBox::stateChanged, ui->frame_limit,
-            &QSpinBox::setEnabled);
+    connect(ui->toggle_frame_limit, &QCheckBox::toggled, ui->frame_limit, &QSpinBox::setEnabled);
 
     ui->layoutBox->setEnabled(!Settings::values.custom_layout);
 
     ui->hw_renderer_group->setEnabled(ui->toggle_hw_renderer->isChecked());
-    connect(ui->toggle_hw_renderer, &QCheckBox::stateChanged, ui->hw_renderer_group,
+    connect(ui->toggle_hw_renderer, &QCheckBox::toggled, ui->hw_renderer_group,
             &QWidget::setEnabled);
     ui->hw_shader_group->setEnabled(ui->toggle_hw_shader->isChecked());
-    connect(ui->toggle_hw_shader, &QCheckBox::stateChanged, ui->hw_shader_group,
-            &QWidget::setEnabled);
+    connect(ui->toggle_hw_shader, &QCheckBox::toggled, ui->hw_shader_group, &QWidget::setEnabled);
 #ifdef __APPLE__
     connect(ui->toggle_hw_shader, &QCheckBox::stateChanged, this, [this](int state) {
         if (state == Qt::Checked) {
@@ -43,8 +39,9 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
 #endif
     connect(ui->bg_button, &QPushButton::clicked, this, [this] {
         const QColor new_bg_color = QColorDialog::getColor(bg_color);
-        if (!new_bg_color.isValid())
+        if (!new_bg_color.isValid()) {
             return;
+        }
         bg_color = new_bg_color;
         QPixmap pixmap(ui->bg_button->size());
         pixmap.fill(bg_color);
@@ -55,7 +52,7 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
 
 ConfigureGraphics::~ConfigureGraphics() = default;
 
-void ConfigureGraphics::setConfiguration() {
+void ConfigureGraphics::SetConfiguration() {
     ui->toggle_hw_renderer->setChecked(Settings::values.use_hw_renderer);
     ui->toggle_hw_shader->setChecked(Settings::values.use_hw_shader);
     ui->toggle_accurate_gs->setChecked(Settings::values.shaders_accurate_gs);
@@ -63,6 +60,7 @@ void ConfigureGraphics::setConfiguration() {
     ui->toggle_shader_jit->setChecked(Settings::values.use_shader_jit);
     ui->resolution_factor_combobox->setCurrentIndex(Settings::values.resolution_factor);
     ui->toggle_frame_limit->setChecked(Settings::values.use_frame_limit);
+    ui->frame_limit->setEnabled(ui->toggle_frame_limit->isChecked());
     ui->frame_limit->setValue(Settings::values.frame_limit);
     ui->factor_3d->setValue(Settings::values.factor_3d);
     ui->toggle_3d->setChecked(Settings::values.toggle_3d);
@@ -77,7 +75,7 @@ void ConfigureGraphics::setConfiguration() {
     ui->bg_button->setIcon(color_icon);
 }
 
-void ConfigureGraphics::applyConfiguration() {
+void ConfigureGraphics::ApplyConfiguration() {
     Settings::values.use_hw_renderer = ui->toggle_hw_renderer->isChecked();
     Settings::values.use_hw_shader = ui->toggle_hw_shader->isChecked();
     Settings::values.shaders_accurate_gs = ui->toggle_accurate_gs->isChecked();
@@ -98,6 +96,6 @@ void ConfigureGraphics::applyConfiguration() {
     Settings::values.bg_blue = static_cast<float>(bg_color.blueF());
 }
 
-void ConfigureGraphics::retranslateUi() {
+void ConfigureGraphics::RetranslateUI() {
     ui->retranslateUi(this);
 }

@@ -25,7 +25,7 @@ public:
      * @param thread The thread about which we're deciding.
      * @return True if the current thread should wait due to this object being unavailable
      */
-    virtual bool ShouldWait(Thread* thread) const = 0;
+    virtual bool ShouldWait(const Thread* thread) const = 0;
 
     /// Acquire/lock the object for the specified thread if it is available
     virtual void Acquire(Thread* thread) = 0;
@@ -49,7 +49,7 @@ public:
     virtual void WakeupAllWaitingThreads();
 
     /// Obtains the highest priority thread that is ready to run from this object's waiting list.
-    std::shared_ptr<Thread> GetHighestPriorityReadyThread();
+    std::shared_ptr<Thread> GetHighestPriorityReadyThread() const;
 
     /// Get a const reference to the waiting threads list for debug use
     const std::vector<std::shared_ptr<Thread>>& GetWaitingThreads() const;

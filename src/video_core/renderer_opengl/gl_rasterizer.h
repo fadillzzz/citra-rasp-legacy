@@ -29,14 +29,17 @@
 #include "video_core/renderer_opengl/pica_to_gl.h"
 #include "video_core/shader/shader.h"
 
+namespace Frontend {
 class EmuWindow;
+}
+
 class ShaderProgramManager;
 
 namespace OpenGL {
 
 class RasterizerOpenGL : public VideoCore::RasterizerInterface {
 public:
-    explicit RasterizerOpenGL(EmuWindow& renderer);
+    explicit RasterizerOpenGL(Frontend::EmuWindow& renderer);
     ~RasterizerOpenGL() override;
 
     void AddTriangle(const Pica::Shader::OutputVertex& v0, const Pica::Shader::OutputVertex& v1,
@@ -69,9 +72,16 @@ private:
     private:
         TextureConfig::TextureFilter mag_filter;
         TextureConfig::TextureFilter min_filter;
+        TextureConfig::TextureFilter mip_filter;
         TextureConfig::WrapMode wrap_s;
         TextureConfig::WrapMode wrap_t;
         u32 border_color;
+        u32 lod_min;
+        u32 lod_max;
+        s32 lod_bias;
+
+        // TODO(wwylele): remove this once mipmap for cube is implemented
+        bool supress_mipmap_for_cube = false;
     };
 
     /// Structure that the hardware rendered vertices are composed of
@@ -254,7 +264,7 @@ private:
 
     RasterizerCacheOpenGL res_cache;
 
-    EmuWindow& emu_window;
+    Frontend::EmuWindow& emu_window;
 
     std::vector<HardwareVertex> vertex_batch;
 

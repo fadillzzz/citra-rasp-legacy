@@ -120,7 +120,7 @@ void Process::Run(s32 main_thread_priority, u32 stack_size) {
     auto MapSegment = [&](CodeSet::Segment& segment, VMAPermission permissions,
                           MemoryState memory_state) {
         HeapAllocate(segment.addr, segment.size, permissions, memory_state, true);
-        kernel.memory.WriteBlock(*this, segment.addr, codeset->memory->data() + segment.offset,
+        kernel.memory.WriteBlock(*this, segment.addr, codeset->memory.data() + segment.offset,
                                  segment.size);
     };
 
@@ -402,7 +402,7 @@ ResultCode Process::Unmap(VAddr target, VAddr source, u32 size, VMAPermission pe
 }
 
 Kernel::Process::Process(KernelSystem& kernel)
-    : Object(kernel), handle_table(kernel), kernel(kernel), vm_manager(kernel.memory) {
+    : Object(kernel), handle_table(kernel), vm_manager(kernel.memory), kernel(kernel) {
 
     kernel.memory.RegisterPageTable(&vm_manager.page_table);
 }

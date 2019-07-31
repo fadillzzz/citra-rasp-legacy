@@ -22,12 +22,12 @@ ConfigureWeb::ConfigureWeb(QWidget* parent)
 #ifndef USE_DISCORD_PRESENCE
     ui->discord_group->setVisible(false);
 #endif
-    this->setConfiguration();
+    SetConfiguration();
 }
 
 ConfigureWeb::~ConfigureWeb() = default;
 
-void ConfigureWeb::setConfiguration() {
+void ConfigureWeb::SetConfiguration() {
     ui->web_credentials_disclaimer->setWordWrap(true);
     ui->telemetry_learn_more->setOpenExternalLinks(true);
     ui->telemetry_learn_more->setText(tr("<a "
@@ -58,7 +58,7 @@ void ConfigureWeb::setConfiguration() {
     ui->toggle_discordrpc->setChecked(UISettings::values.enable_discord_presence);
 }
 
-void ConfigureWeb::applyConfiguration() {
+void ConfigureWeb::ApplyConfiguration() {
     Settings::values.enable_telemetry = ui->toggle_telemetry->isChecked();
     UISettings::values.enable_discord_presence = ui->toggle_discordrpc->isChecked();
     if (user_verified) {
@@ -80,12 +80,16 @@ void ConfigureWeb::RefreshTelemetryID() {
 void ConfigureWeb::OnLoginChanged() {
     if (ui->edit_username->text().isEmpty() && ui->edit_token->text().isEmpty()) {
         user_verified = true;
-        ui->label_username_verified->setPixmap(QIcon::fromTheme("checked").pixmap(16));
-        ui->label_token_verified->setPixmap(QIcon::fromTheme("checked").pixmap(16));
+
+        const QPixmap pixmap = QIcon::fromTheme(QStringLiteral("checked")).pixmap(16);
+        ui->label_username_verified->setPixmap(pixmap);
+        ui->label_token_verified->setPixmap(pixmap);
     } else {
         user_verified = false;
-        ui->label_username_verified->setPixmap(QIcon::fromTheme("failed").pixmap(16));
-        ui->label_token_verified->setPixmap(QIcon::fromTheme("failed").pixmap(16));
+
+        const QPixmap pixmap = QIcon::fromTheme(QStringLiteral("failed")).pixmap(16);
+        ui->label_username_verified->setPixmap(pixmap);
+        ui->label_token_verified->setPixmap(pixmap);
     }
 }
 
@@ -103,11 +107,14 @@ void ConfigureWeb::OnLoginVerified() {
     ui->button_verify_login->setText(tr("Verify"));
     if (verify_watcher.result()) {
         user_verified = true;
-        ui->label_username_verified->setPixmap(QIcon::fromTheme("checked").pixmap(16));
-        ui->label_token_verified->setPixmap(QIcon::fromTheme("checked").pixmap(16));
+
+        const QPixmap pixmap = QIcon::fromTheme(QStringLiteral("checked")).pixmap(16);
+        ui->label_username_verified->setPixmap(pixmap);
+        ui->label_token_verified->setPixmap(pixmap);
     } else {
-        ui->label_username_verified->setPixmap(QIcon::fromTheme("failed").pixmap(16));
-        ui->label_token_verified->setPixmap(QIcon::fromTheme("failed").pixmap(16));
+        const QPixmap pixmap = QIcon::fromTheme(QStringLiteral("failed")).pixmap(16);
+        ui->label_username_verified->setPixmap(pixmap);
+        ui->label_token_verified->setPixmap(pixmap);
         QMessageBox::critical(
             this, tr("Verification failed"),
             tr("Verification failed. Check that you have entered your username and token "
@@ -115,6 +122,11 @@ void ConfigureWeb::OnLoginVerified() {
     }
 }
 
-void ConfigureWeb::retranslateUi() {
+void ConfigureWeb::RetranslateUI() {
     ui->retranslateUi(this);
+}
+
+void ConfigureWeb::SetWebServiceConfigEnabled(bool enabled) {
+    ui->label_disable_info->setVisible(!enabled);
+    ui->groupBoxWebConfig->setEnabled(enabled);
 }

@@ -320,9 +320,17 @@ Loader::ResultStatus NCCHContainer::Load() {
 
         // System archives and DLC don't have an extended header but have RomFS
         if (ncch_header.extended_header_size) {
-            if (file.ReadBytes(&exheader_header, sizeof(ExHeader_Header)) !=
-                sizeof(ExHeader_Header))
+            auto read_exheader = [this](FileUtil::IOFile& file) {
+                const std::size_t size = sizeof(exheader_header);
+                return file && file.ReadBytes(&exheader_header, size) == size;
+            };
+
+            FileUtil::IOFile exheader_override_file{filepath + ".exheader", "rb"};
+            if (read_exheader(exheader_override_file)) {
+                is_tainted = true;
+            } else if (!read_exheader(file)) {
                 return Loader::ResultStatus::Error;
+            }
 
             if (is_encrypted) {
                 // This ID check is masked to low 32-bit as a toleration to ill-formed ROM created
@@ -531,24 +539,26 @@ Loader::ResultStatus NCCHContainer::LoadSectionExeFS(const char* name, std::vect
                 }
             }
 
-            std::string override_ips = filepath + ".exefsdir/code.ips";
-
-            if (FileUtil::Exists(override_ips) && strcmp(name, ".code") == 0) {
-                FileUtil::IOFile ips_file(override_ips, "rb");
-                std::size_t ips_file_size = ips_file.GetSize();
-                std::vector<u8> ips(ips_file_size);
-
-                if (ips_file.IsOpen() &&
-                    ips_file.ReadBytes(&ips[0], ips_file_size) == ips_file_size) {
-                    LOG_INFO(Service_FS, "File {} patching code.bin", override_ips);
-                    ApplyIPS(ips, buffer);
-                }
-            }
-
             return Loader::ResultStatus::Success;
         }
     }
     return Loader::ResultStatus::ErrorNotUsed;
+}
+
+bool NCCHContainer::ApplyIPSPatch(std::vector<u8>& code) const {
+    const std::string override_ips = filepath + ".exefsdir/code.ips";
+
+    FileUtil::IOFile ips_file{override_ips, "rb"};
+    if (!ips_file)
+        return false;
+
+    std::vector<u8> ips(ips_file.GetSize());
+    if (ips_file.ReadBytes(ips.data(), ips.size()) != ips.size())
+        return false;
+
+    LOG_INFO(Service_FS, "File {} patching code.bin", override_ips);
+    ApplyIPS(ips, code);
+    return true;
 }
 
 Loader::ResultStatus NCCHContainer::LoadOverrideExeFSSection(const char* name,
@@ -559,7 +569,7 @@ Loader::ResultStatus NCCHContainer::LoadOverrideExeFSSection(const char* name,
     if (!strcmp(name, ".code"))
         override_name = "code.bin";
     else if (!strcmp(name, "icon"))
-        override_name = "code.bin";
+        override_name = "icon.bin";
     else if (!strcmp(name, "banner"))
         override_name = "banner.bnr";
     else if (!strcmp(name, "logo"))

@@ -14,6 +14,7 @@
 #include "common/common_types.h"
 #include "core/hle/kernel/memory.h"
 #include "core/hle/result.h"
+#include "core/memory.h"
 
 namespace ConfigMem {
 class Handler;
@@ -83,6 +84,9 @@ public:
                           std::function<void()> prepare_reschedule_callback, u32 system_mode);
     ~KernelSystem();
 
+    using PortPair = std::pair<std::shared_ptr<ServerPort>, std::shared_ptr<ClientPort>>;
+    using SessionPair = std::pair<std::shared_ptr<ServerSession>, std::shared_ptr<ClientSession>>;
+
     /**
      * Creates an address arbiter.
      *
@@ -150,8 +154,7 @@ public:
      * @param name Optional name of the ports
      * @return The created port tuple
      */
-    std::tuple<std::shared_ptr<ServerPort>, std::shared_ptr<ClientPort>> CreatePortPair(
-        u32 max_sessions, std::string name = "UnknownPort");
+    PortPair CreatePortPair(u32 max_sessions, std::string name = "UnknownPort");
 
     /**
      * Creates a pair of ServerSession and an associated ClientSession.
@@ -159,8 +162,8 @@ public:
      * @param client_port Optional The ClientPort that spawned this session.
      * @return The created session tuple
      */
-    std::tuple<std::shared_ptr<ServerSession>, std::shared_ptr<ClientSession>> CreateSessionPair(
-        const std::string& name = "Unknown", std::shared_ptr<ClientPort> client_port = nullptr);
+    SessionPair CreateSessionPair(const std::string& name = "Unknown",
+                                  std::shared_ptr<ClientPort> client_port = nullptr);
 
     ResourceLimitList& ResourceLimit();
     const ResourceLimitList& ResourceLimit() const;
@@ -204,6 +207,10 @@ public:
     std::shared_ptr<Process> GetCurrentProcess() const;
     void SetCurrentProcess(std::shared_ptr<Process> process);
 
+    void SetCurrentMemoryPageTable(Memory::PageTable* page_table);
+
+    void SetCPU(std::shared_ptr<ARM_Interface> cpu);
+
     ThreadManager& GetThreadManager();
     const ThreadManager& GetThreadManager() const;
 
@@ -230,6 +237,8 @@ public:
 
     /// Map of named ports managed by the kernel, which can be retrieved using the ConnectToPort
     std::unordered_map<std::string, std::shared_ptr<ClientPort>> named_ports;
+
+    std::shared_ptr<ARM_Interface> current_cpu;
 
     Memory::MemorySystem& memory;
 

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -30,9 +31,9 @@ enum class ButtonConfig {
 };
 
 /// Default English button text mappings. Frontends may need to copy this to internationalize it.
-constexpr char BUTTON_OKAY[] = "Ok";
-constexpr char BUTTON_CANCEL[] = "Cancel";
-constexpr char BUTTON_FORGOT[] = "I Forgot";
+constexpr char SWKBD_BUTTON_OKAY[] = "Ok";
+constexpr char SWKBD_BUTTON_CANCEL[] = "Cancel";
+constexpr char SWKBD_BUTTON_FORGOT[] = "I Forgot";
 
 /// Configuration thats relevent to frontend implementation of applets. Anything missing that we
 /// later learn is needed can be added here and filled in by the backend HLE applet
@@ -82,12 +83,27 @@ enum class ValidationError {
 
 class SoftwareKeyboard {
 public:
-    virtual void Setup(const KeyboardConfig* config) {
-        this->config = KeyboardConfig(*config);
+    /**
+     * Executes the software keyboard, configured with the given parameters.
+     */
+    virtual void Execute(const KeyboardConfig& config) {
+        this->config = config;
     }
-    const KeyboardData* ReceiveData() {
-        return &data;
-    }
+
+    /**
+     * Whether the result data is ready to be received.
+     */
+    bool DataReady() const;
+
+    /**
+     * Receives the current result data stored in the applet, and clears the ready state.
+     */
+    const KeyboardData& ReceiveData();
+
+    /**
+     * Shows an error text returned by the callback.
+     */
+    virtual void ShowError(const std::string& error) = 0;
 
     /**
      * Validates if the provided string breaks any of the filter rules. This is meant to be called
@@ -117,15 +133,14 @@ public:
 protected:
     KeyboardConfig config;
     KeyboardData data;
+
+    std::atomic_bool data_ready = false;
 };
 
 class DefaultKeyboard final : public SoftwareKeyboard {
 public:
-    void Setup(const KeyboardConfig* config) override;
+    void Execute(const KeyboardConfig& config) override;
+    void ShowError(const std::string& error) override;
 };
-
-void RegisterSoftwareKeyboard(std::shared_ptr<SoftwareKeyboard> applet);
-
-std::shared_ptr<SoftwareKeyboard> GetRegisteredSoftwareKeyboard();
 
 } // namespace Frontend

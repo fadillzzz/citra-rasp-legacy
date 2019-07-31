@@ -71,8 +71,7 @@ void File::Read(Kernel::HLERequestContext& ctx) {
     rb.PushMappedBuffer(buffer);
 
     std::chrono::nanoseconds read_timeout_ns{backend->GetReadDelayNs(length)};
-    ctx.SleepClientThread(Kernel::SharedFrom(system.Kernel().GetThreadManager().GetCurrentThread()),
-                          "file::read", read_timeout_ns,
+    ctx.SleepClientThread("file::read", read_timeout_ns,
                           [](std::shared_ptr<Kernel::Thread> /*thread*/,
                              Kernel::HLERequestContext& /*ctx*/,
                              Kernel::ThreadWakeupReason /*reason*/) {
@@ -198,8 +197,7 @@ void File::OpenLinkFile(Kernel::HLERequestContext& ctx) {
     using Kernel::ServerSession;
     IPC::RequestParser rp(ctx, 0x080C, 0, 0);
     IPC::RequestBuilder rb = rp.MakeBuilder(1, 2);
-    auto sessions = system.Kernel().CreateSessionPair(GetName());
-    auto server = std::get<std::shared_ptr<ServerSession>>(sessions);
+    auto [server, client] = system.Kernel().CreateSessionPair(GetName());
     ClientConnected(server);
 
     FileSessionSlot* slot = GetSessionData(server);
@@ -211,7 +209,7 @@ void File::OpenLinkFile(Kernel::HLERequestContext& ctx) {
     slot->subfile = false;
 
     rb.Push(RESULT_SUCCESS);
-    rb.PushMoveObjects(std::get<std::shared_ptr<ClientSession>>(sessions));
+    rb.PushMoveObjects(client);
 }
 
 void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
@@ -245,8 +243,7 @@ void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
 
     using Kernel::ClientSession;
     using Kernel::ServerSession;
-    auto sessions = system.Kernel().CreateSessionPair(GetName());
-    auto server = std::get<std::shared_ptr<ServerSession>>(sessions);
+    auto [server, client] = system.Kernel().CreateSessionPair(GetName());
     ClientConnected(server);
 
     FileSessionSlot* slot = GetSessionData(server);
@@ -256,12 +253,11 @@ void File::OpenSubFile(Kernel::HLERequestContext& ctx) {
     slot->subfile = true;
 
     rb.Push(RESULT_SUCCESS);
-    rb.PushMoveObjects(std::get<std::shared_ptr<ClientSession>>(sessions));
+    rb.PushMoveObjects(client);
 }
 
 std::shared_ptr<Kernel::ClientSession> File::Connect() {
-    auto sessions = system.Kernel().CreateSessionPair(GetName());
-    auto server = std::get<std::shared_ptr<Kernel::ServerSession>>(sessions);
+    auto [server, client] = system.Kernel().CreateSessionPair(GetName());
     ClientConnected(server);
 
     FileSessionSlot* slot = GetSessionData(server);
@@ -270,7 +266,7 @@ std::shared_ptr<Kernel::ClientSession> File::Connect() {
     slot->size = backend->GetSize();
     slot->subfile = false;
 
-    return std::get<std::shared_ptr<Kernel::ClientSession>>(sessions);
+    return client;
 }
 
 std::size_t File::GetSessionFileOffset(std::shared_ptr<Kernel::ServerSession> session) {

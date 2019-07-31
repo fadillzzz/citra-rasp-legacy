@@ -7,14 +7,18 @@
 #include <memory>
 #include <string>
 #include "common/common_types.h"
+#include "core/frontend/applets/mii_selector.h"
 #include "core/frontend/applets/swkbd.h"
 #include "core/loader/loader.h"
 #include "core/memory.h"
 #include "core/perf_stats.h"
 #include "core/telemetry_session.h"
 
-class EmuWindow;
 class ARM_Interface;
+
+namespace Frontend {
+class EmuWindow;
+}
 
 namespace Memory {
 class MemorySystem;
@@ -120,7 +124,7 @@ public:
      * @param filepath String path to the executable application to load on the host file system.
      * @returns ResultStatus code, indicating if the operation succeeded.
      */
-    ResultStatus Load(EmuWindow& emu_window, const std::string& filepath);
+    ResultStatus Load(Frontend::EmuWindow& emu_window, const std::string& filepath);
 
     /**
      * Indicates if the emulated system is powered on (all subsystems initialized and able to run an
@@ -222,7 +226,13 @@ public:
 
     /// Frontend Applets
 
+    void RegisterMiiSelector(std::shared_ptr<Frontend::MiiSelector> mii_selector);
+
     void RegisterSoftwareKeyboard(std::shared_ptr<Frontend::SoftwareKeyboard> swkbd);
+
+    std::shared_ptr<Frontend::MiiSelector> GetMiiSelector() const {
+        return registered_mii_selector;
+    }
 
     std::shared_ptr<Frontend::SoftwareKeyboard> GetSoftwareKeyboard() const {
         return registered_swkbd;
@@ -236,7 +246,7 @@ private:
      * @param system_mode The system mode.
      * @return ResultStatus code, indicating if the operation succeeded.
      */
-    ResultStatus Init(EmuWindow& emu_window, u32 system_mode);
+    ResultStatus Init(Frontend::EmuWindow& emu_window, u32 system_mode);
 
     /// Reschedule the core emulation
     void Reschedule();
@@ -245,7 +255,7 @@ private:
     std::unique_ptr<Loader::AppLoader> app_loader;
 
     /// ARM11 CPU core
-    std::unique_ptr<ARM_Interface> cpu_core;
+    std::shared_ptr<ARM_Interface> cpu_core;
 
     /// DSP core
     std::unique_ptr<AudioCore::DspInterface> dsp_core;
@@ -260,6 +270,7 @@ private:
     std::shared_ptr<Service::SM::ServiceManager> service_manager;
 
     /// Frontend applets
+    std::shared_ptr<Frontend::MiiSelector> registered_mii_selector;
     std::shared_ptr<Frontend::SoftwareKeyboard> registered_swkbd;
 
     /// Cheats manager
@@ -280,7 +291,7 @@ private:
     ResultStatus status = ResultStatus::Success;
     std::string status_details = "";
     /// Saved variables for reset
-    EmuWindow* m_emu_window;
+    Frontend::EmuWindow* m_emu_window;
     std::string m_filepath;
 
     std::atomic<bool> reset_requested;
@@ -293,10 +304,6 @@ inline ARM_Interface& CPU() {
 
 inline AudioCore::DspInterface& DSP() {
     return System::GetInstance().DSP();
-}
-
-inline TelemetrySession& Telemetry() {
-    return System::GetInstance().TelemetrySession();
 }
 
 } // namespace Core

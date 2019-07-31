@@ -68,7 +68,7 @@ public:
         return name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::CodeSet;
+    static constexpr HandleType HANDLE_TYPE = HandleType::CodeSet;
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }
@@ -97,7 +97,7 @@ public:
         return segments[2];
     }
 
-    std::shared_ptr<std::vector<u8>> memory;
+    std::vector<u8> memory;
 
     std::array<Segment, 3> segments;
     VAddr entrypoint;
@@ -120,7 +120,7 @@ public:
         return codeset->name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::Process;
+    static constexpr HandleType HANDLE_TYPE = HandleType::Process;
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }

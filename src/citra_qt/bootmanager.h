@@ -22,11 +22,12 @@ class GGLWidgetInternal;
 class GMainWindow;
 class GRenderWindow;
 
-class EmuThread : public QThread {
+class EmuThread final : public QThread {
     Q_OBJECT
 
 public:
     explicit EmuThread(GRenderWindow* render_window);
+    ~EmuThread() override;
 
     /**
      * Start emulation (on new thread)
@@ -49,7 +50,7 @@ public:
      * @note This function is thread-safe
      */
     void SetRunning(bool running) {
-        std::unique_lock<std::mutex> lock(running_mutex);
+        std::unique_lock lock{running_mutex};
         this->running = running;
         lock.unlock();
         running_cv.notify_all();
@@ -103,7 +104,7 @@ signals:
     void ErrorThrown(Core::System::ResultStatus, std::string);
 };
 
-class GRenderWindow : public QWidget, public EmuWindow {
+class GRenderWindow : public QWidget, public Frontend::EmuWindow {
     Q_OBJECT
 
 public:
@@ -136,11 +137,11 @@ public:
 
     void focusOutEvent(QFocusEvent* event) override;
 
-    void OnClientAreaResized(unsigned width, unsigned height);
+    void OnClientAreaResized(u32 width, u32 height);
 
     void InitRenderTarget();
 
-    void CaptureScreenshot(u16 res_scale, const QString& screenshot_path);
+    void CaptureScreenshot(u32 res_scale, const QString& screenshot_path);
 
 public slots:
     void moveContext(); // overridden
@@ -154,13 +155,12 @@ signals:
     void Closed();
 
 private:
-    std::pair<unsigned, unsigned> ScaleTouch(const QPointF pos) const;
+    std::pair<u32, u32> ScaleTouch(QPointF pos) const;
     void TouchBeginEvent(const QTouchEvent* event);
     void TouchUpdateEvent(const QTouchEvent* event);
     void TouchEndEvent();
 
-    void OnMinimalClientAreaChangeRequest(
-        const std::pair<unsigned, unsigned>& minimal_size) override;
+    void OnMinimalClientAreaChangeRequest(std::pair<u32, u32> minimal_size) override;
 
     GGLWidgetInternal* child;
 

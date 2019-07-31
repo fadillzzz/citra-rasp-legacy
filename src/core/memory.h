@@ -220,9 +220,6 @@ public:
     MemorySystem();
     ~MemorySystem();
 
-    /// Sets CPU to notify page table change
-    void SetCPU(ARM_Interface& cpu);
-
     /**
      * Maps an allocated buffer onto a region of the emulated process address space.
      *
@@ -265,8 +262,8 @@ public:
     void ZeroBlock(const Kernel::Process& process, VAddr dest_addr, const std::size_t size);
     void CopyBlock(const Kernel::Process& process, VAddr dest_addr, VAddr src_addr,
                    std::size_t size);
-    void CopyBlock(const Kernel::Process& src_process, const Kernel::Process& dest_process,
-                   VAddr src_addr, VAddr dest_addr, std::size_t size);
+    void CopyBlock(const Kernel::Process& dest_process, const Kernel::Process& src_process,
+                   VAddr dest_addr, VAddr src_addr, std::size_t size);
 
     std::string ReadCString(VAddr vaddr, std::size_t max_length);
 

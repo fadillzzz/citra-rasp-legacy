@@ -38,7 +38,7 @@ ResultVal<std::shared_ptr<ServerSession>> ServerSession::Create(KernelSystem& ke
     return MakeResult(std::move(server_session));
 }
 
-bool ServerSession::ShouldWait(Thread* thread) const {
+bool ServerSession::ShouldWait(const Thread* thread) const {
     // Closed sessions should never wait, an error will be returned from svcReplyAndReceive.
     if (parent->client == nullptr)
         return false;
@@ -72,7 +72,7 @@ ResultCode ServerSession::HandleSyncRequest(std::shared_ptr<Thread> thread) {
         kernel.memory.ReadBlock(*current_process, thread->GetCommandBufferAddress(), cmd_buf.data(),
                                 cmd_buf.size() * sizeof(u32));
 
-        Kernel::HLERequestContext context(kernel, SharedFrom(this));
+        Kernel::HLERequestContext context(kernel, SharedFrom(this), thread.get());
         context.PopulateFromIncomingCommandBuffer(cmd_buf.data(), *current_process);
 
         hle_handler->HandleSyncRequest(context);
@@ -120,8 +120,8 @@ ResultCode ServerSession::HandleSyncRequest(std::shared_ptr<Thread> thread) {
     return RESULT_SUCCESS;
 }
 
-std::tuple<std::shared_ptr<ServerSession>, std::shared_ptr<ClientSession>>
-KernelSystem::CreateSessionPair(const std::string& name, std::shared_ptr<ClientPort> port) {
+KernelSystem::SessionPair KernelSystem::CreateSessionPair(const std::string& name,
+                                                          std::shared_ptr<ClientPort> port) {
     auto server_session = ServerSession::Create(*this, name + "_Server").Unwrap();
     auto client_session{std::make_shared<ClientSession>(*this)};
     client_session->name = name + "_Client";
@@ -134,7 +134,7 @@ KernelSystem::CreateSessionPair(const std::string& name, std::shared_ptr<ClientP
     client_session->parent = parent;
     server_session->parent = parent;
 
-    return std::make_tuple(std::move(server_session), std::move(client_session));
+    return std::make_pair(std::move(server_session), std::move(client_session));
 }
 
 } // namespace Kernel

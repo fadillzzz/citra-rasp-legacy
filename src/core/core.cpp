@@ -92,9 +92,8 @@ System::ResultStatus System::SingleStep() {
     return RunLoop(false);
 }
 
-System::ResultStatus System::Load(EmuWindow& emu_window, const std::string& filepath) {
+System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::string& filepath) {
     app_loader = Loader::GetLoader(filepath);
-
     if (!app_loader) {
         LOG_CRITICAL(Core, "Failed to obtain loader for {}!", filepath);
         return ResultStatus::ErrorGetLoader;
@@ -125,6 +124,7 @@ System::ResultStatus System::Load(EmuWindow& emu_window, const std::string& file
         return init_result;
     }
 
+    telemetry_session->AddInitialInfo(*app_loader);
     std::shared_ptr<Kernel::Process> process;
     const Loader::ResultStatus load_result{app_loader->Load(process)};
     kernel->SetCurrentProcess(process);
@@ -141,7 +141,6 @@ System::ResultStatus System::Load(EmuWindow& emu_window, const std::string& file
             return ResultStatus::ErrorLoader;
         }
     }
-    memory->SetCurrentPageTable(&kernel->GetCurrentProcess()->vm_manager.page_table);
     cheat_engine = std::make_unique<Cheats::CheatEngine>(*this);
     status = ResultStatus::Success;
     m_emu_window = &emu_window;
@@ -167,7 +166,7 @@ void System::Reschedule() {
     kernel->GetThreadManager().Reschedule();
 }
 
-System::ResultStatus System::Init(EmuWindow& emu_window, u32 system_mode) {
+System::ResultStatus System::Init(Frontend::EmuWindow& emu_window, u32 system_mode) {
     LOG_DEBUG(HW_Memory, "initialized OK");
 
     memory = std::make_unique<Memory::MemorySystem>();
@@ -179,17 +178,16 @@ System::ResultStatus System::Init(EmuWindow& emu_window, u32 system_mode) {
 
     if (Settings::values.use_cpu_jit) {
 #ifdef ARCHITECTURE_x86_64
-        cpu_core = std::make_unique<ARM_Dynarmic>(this, *memory, USER32MODE);
+        cpu_core = std::make_shared<ARM_Dynarmic>(this, *memory, USER32MODE);
 #else
-        cpu_core = std::make_unique<ARM_DynCom>(this, *memory, USER32MODE);
+        cpu_core = std::make_shared<ARM_DynCom>(this, *memory, USER32MODE);
         LOG_WARNING(Core, "CPU JIT requested, but Dynarmic not available");
 #endif
     } else {
-        cpu_core = std::make_unique<ARM_DynCom>(this, *memory, USER32MODE);
+        cpu_core = std::make_shared<ARM_DynCom>(this, *memory, USER32MODE);
     }
 
-    kernel->GetThreadManager().SetCPU(*cpu_core);
-    memory->SetCPU(*cpu_core);
+    kernel->SetCPU(cpu_core);
 
     if (Settings::values.enable_dsp_lle) {
         dsp_core = std::make_unique<AudioCore::DspLle>(*memory,
@@ -276,19 +274,23 @@ const Cheats::CheatEngine& System::CheatEngine() const {
     return *cheat_engine;
 }
 
+void System::RegisterMiiSelector(std::shared_ptr<Frontend::MiiSelector> mii_selector) {
+    registered_mii_selector = std::move(mii_selector);
+}
+
 void System::RegisterSoftwareKeyboard(std::shared_ptr<Frontend::SoftwareKeyboard> swkbd) {
     registered_swkbd = std::move(swkbd);
 }
 
 void System::Shutdown() {
     // Log last frame performance stats
-    auto perf_results = GetAndResetPerfStats();
-    Telemetry().AddField(Telemetry::FieldType::Performance, "Shutdown_EmulationSpeed",
-                         perf_results.emulation_speed * 100.0);
-    Telemetry().AddField(Telemetry::FieldType::Performance, "Shutdown_Framerate",
-                         perf_results.game_fps);
-    Telemetry().AddField(Telemetry::FieldType::Performance, "Shutdown_Frametime",
-                         perf_results.frametime * 1000.0);
+    const auto perf_results = GetAndResetPerfStats();
+    telemetry_session->AddField(Telemetry::FieldType::Performance, "Shutdown_EmulationSpeed",
+                                perf_results.emulation_speed * 100.0);
+    telemetry_session->AddField(Telemetry::FieldType::Performance, "Shutdown_Framerate",
+                                perf_results.game_fps);
+    telemetry_session->AddField(Telemetry::FieldType::Performance, "Shutdown_Frametime",
+                                perf_results.frametime * 1000.0);
 
     // Shutdown emulation session
     GDBStub::Shutdown();

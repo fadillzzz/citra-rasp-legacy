@@ -30,7 +30,7 @@ public:
         return name;
     }
 
-    static const HandleType HANDLE_TYPE = HandleType::ServerPort;
+    static constexpr HandleType HANDLE_TYPE = HandleType::ServerPort;
     HandleType GetHandleType() const override {
         return HANDLE_TYPE;
     }
@@ -58,7 +58,7 @@ public:
     /// ServerSessions created from this port inherit a reference to this handler.
     std::shared_ptr<SessionRequestHandler> hle_handler;
 
-    bool ShouldWait(Thread* thread) const override;
+    bool ShouldWait(const Thread* thread) const override;
     void Acquire(Thread* thread) override;
 };
 

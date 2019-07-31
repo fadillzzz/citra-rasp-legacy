@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QLabel>
+#include <QMessageBox>
 #include <QMouseEvent>
 #include <QPushButton>
 #include <QScrollArea>
@@ -50,7 +51,7 @@ GraphicsSurfaceWidget::GraphicsSurfaceWidget(std::shared_ptr<Pica::DebugContext>
                                              QWidget* parent)
     : BreakPointObserverDock(debug_context, tr("Pica Surface Viewer"), parent),
       surface_source(Source::ColorBuffer) {
-    setObjectName("PicaSurface");
+    setObjectName(QStringLiteral("PicaSurface"));
 
     surface_source_list = new QComboBox;
     surface_source_list->addItem(tr("Color Buffer"));
@@ -65,7 +66,7 @@ GraphicsSurfaceWidget::GraphicsSurfaceWidget(std::shared_ptr<Pica::DebugContext>
     surface_address_control = new CSpinBox;
     surface_address_control->SetBase(16);
     surface_address_control->SetRange(0, 0xFFFFFFFF);
-    surface_address_control->SetPrefix("0x");
+    surface_address_control->SetPrefix(QStringLiteral("0x"));
 
     unsigned max_dimension = 16384; // TODO: Find actual maximum
 
@@ -81,28 +82,31 @@ GraphicsSurfaceWidget::GraphicsSurfaceWidget(std::shared_ptr<Pica::DebugContext>
     surface_picker_y_control = new QSpinBox;
     surface_picker_y_control->setRange(0, max_dimension - 1);
 
-    surface_format_control = new QComboBox;
-
     // Color formats sorted by Pica texture format index
-    surface_format_control->addItem("RGBA8");
-    surface_format_control->addItem("RGB8");
-    surface_format_control->addItem("RGB5A1");
-    surface_format_control->addItem("RGB565");
-    surface_format_control->addItem("RGBA4");
-    surface_format_control->addItem("IA8");
-    surface_format_control->addItem("RG8");
-    surface_format_control->addItem("I8");
-    surface_format_control->addItem("A8");
-    surface_format_control->addItem("IA4");
-    surface_format_control->addItem("I4");
-    surface_format_control->addItem("A4");
-    surface_format_control->addItem("ETC1");
-    surface_format_control->addItem("ETC1A4");
-    surface_format_control->addItem("D16");
-    surface_format_control->addItem("D24");
-    surface_format_control->addItem("D24X8");
-    surface_format_control->addItem("X24S8");
-    surface_format_control->addItem(tr("Unknown"));
+    const QStringList surface_formats{
+        QStringLiteral("RGBA8"),
+        QStringLiteral("RGB8"),
+        QStringLiteral("RGB5A1"),
+        QStringLiteral("RGB565"),
+        QStringLiteral("RGBA4"),
+        QStringLiteral("IA8"),
+        QStringLiteral("RG8"),
+        QStringLiteral("I8"),
+        QStringLiteral("A8"),
+        QStringLiteral("IA4"),
+        QStringLiteral("I4"),
+        QStringLiteral("A4"),
+        QStringLiteral("ETC1"),
+        QStringLiteral("ETC1A4"),
+        QStringLiteral("D16"),
+        QStringLiteral("D24"),
+        QStringLiteral("D24X8"),
+        QStringLiteral("X24S8"),
+        tr("Unknown"),
+    };
+
+    surface_format_control = new QComboBox;
+    surface_format_control->addItems(surface_formats);
 
     surface_info_label = new QLabel();
     surface_info_label->setWordWrap(true);
@@ -117,26 +121,24 @@ GraphicsSurfaceWidget::GraphicsSurfaceWidget(std::shared_ptr<Pica::DebugContext>
     scroll_area->setWidgetResizable(false);
     scroll_area->setWidget(surface_picture_label);
 
-    save_surface = new QPushButton(QIcon::fromTheme("document-save"), tr("Save"));
+    save_surface = new QPushButton(QIcon::fromTheme(QStringLiteral("document-save")), tr("Save"));
 
     // Connections
     connect(this, &GraphicsSurfaceWidget::Update, this, &GraphicsSurfaceWidget::OnUpdate);
-    connect(surface_source_list,
-            static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+    connect(surface_source_list, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &GraphicsSurfaceWidget::OnSurfaceSourceChanged);
     connect(surface_address_control, &CSpinBox::ValueChanged, this,
             &GraphicsSurfaceWidget::OnSurfaceAddressChanged);
-    connect(surface_width_control, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-            this, &GraphicsSurfaceWidget::OnSurfaceWidthChanged);
-    connect(surface_height_control, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-            this, &GraphicsSurfaceWidget::OnSurfaceHeightChanged);
-    connect(surface_format_control,
-            static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+    connect(surface_width_control, qOverload<int>(&QSpinBox::valueChanged), this,
+            &GraphicsSurfaceWidget::OnSurfaceWidthChanged);
+    connect(surface_height_control, qOverload<int>(&QSpinBox::valueChanged), this,
+            &GraphicsSurfaceWidget::OnSurfaceHeightChanged);
+    connect(surface_format_control, qOverload<int>(&QComboBox::currentIndexChanged), this,
             &GraphicsSurfaceWidget::OnSurfaceFormatChanged);
-    connect(surface_picker_x_control, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-            this, &GraphicsSurfaceWidget::OnSurfacePickerXChanged);
-    connect(surface_picker_y_control, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-            this, &GraphicsSurfaceWidget::OnSurfacePickerYChanged);
+    connect(surface_picker_x_control, qOverload<int>(&QSpinBox::valueChanged), this,
+            &GraphicsSurfaceWidget::OnSurfacePickerXChanged);
+    connect(surface_picker_y_control, qOverload<int>(&QSpinBox::valueChanged), this,
+            &GraphicsSurfaceWidget::OnSurfacePickerYChanged);
     connect(save_surface, &QPushButton::clicked, this, &GraphicsSurfaceWidget::SaveSurface);
 
     auto main_widget = new QWidget;
@@ -311,7 +313,7 @@ void GraphicsSurfaceWidget::Pick(int x, int y) {
         switch (format) {
         case Format::RGBA8: {
             auto value = Color::DecodeRGBA8(pixel) / 255.0f;
-            return QString("Red: %1, Green: %2, Blue: %3, Alpha: %4")
+            return QStringLiteral("Red: %1, Green: %2, Blue: %3, Alpha: %4")
                 .arg(QString::number(value.r(), 'f', 2))
                 .arg(QString::number(value.g(), 'f', 2))
                 .arg(QString::number(value.b(), 'f', 2))
@@ -319,14 +321,14 @@ void GraphicsSurfaceWidget::Pick(int x, int y) {
         }
         case Format::RGB8: {
             auto value = Color::DecodeRGB8(pixel) / 255.0f;
-            return QString("Red: %1, Green: %2, Blue: %3")
+            return QStringLiteral("Red: %1, Green: %2, Blue: %3")
                 .arg(QString::number(value.r(), 'f', 2))
                 .arg(QString::number(value.g(), 'f', 2))
                 .arg(QString::number(value.b(), 'f', 2));
         }
         case Format::RGB5A1: {
             auto value = Color::DecodeRGB5A1(pixel) / 255.0f;
-            return QString("Red: %1, Green: %2, Blue: %3, Alpha: %4")
+            return QStringLiteral("Red: %1, Green: %2, Blue: %3, Alpha: %4")
                 .arg(QString::number(value.r(), 'f', 2))
                 .arg(QString::number(value.g(), 'f', 2))
                 .arg(QString::number(value.b(), 'f', 2))
@@ -334,69 +336,72 @@ void GraphicsSurfaceWidget::Pick(int x, int y) {
         }
         case Format::RGB565: {
             auto value = Color::DecodeRGB565(pixel) / 255.0f;
-            return QString("Red: %1, Green: %2, Blue: %3")
+            return QStringLiteral("Red: %1, Green: %2, Blue: %3")
                 .arg(QString::number(value.r(), 'f', 2))
                 .arg(QString::number(value.g(), 'f', 2))
                 .arg(QString::number(value.b(), 'f', 2));
         }
         case Format::RGBA4: {
             auto value = Color::DecodeRGBA4(pixel) / 255.0f;
-            return QString("Red: %1, Green: %2, Blue: %3, Alpha: %4")
+            return QStringLiteral("Red: %1, Green: %2, Blue: %3, Alpha: %4")
                 .arg(QString::number(value.r(), 'f', 2))
                 .arg(QString::number(value.g(), 'f', 2))
                 .arg(QString::number(value.b(), 'f', 2))
                 .arg(QString::number(value.a(), 'f', 2));
         }
         case Format::IA8:
-            return QString("Index: %1, Alpha: %2").arg(pixel[0]).arg(pixel[1]);
+            return QStringLiteral("Index: %1, Alpha: %2").arg(pixel[0]).arg(pixel[1]);
         case Format::RG8: {
             auto value = Color::DecodeRG8(pixel) / 255.0f;
-            return QString("Red: %1, Green: %2")
+            return QStringLiteral("Red: %1, Green: %2")
                 .arg(QString::number(value.r(), 'f', 2))
                 .arg(QString::number(value.g(), 'f', 2));
         }
         case Format::I8:
-            return QString("Index: %1").arg(*pixel);
+            return QStringLiteral("Index: %1").arg(*pixel);
         case Format::A8:
-            return QString("Alpha: %1").arg(QString::number(*pixel / 255.0f, 'f', 2));
+            return QStringLiteral("Alpha: %1").arg(QString::number(*pixel / 255.0f, 'f', 2));
         case Format::IA4:
-            return QString("Index: %1, Alpha: %2").arg(*pixel & 0xF).arg((*pixel & 0xF0) >> 4);
+            return QStringLiteral("Index: %1, Alpha: %2")
+                .arg(*pixel & 0xF)
+                .arg((*pixel & 0xF0) >> 4);
         case Format::I4: {
             u8 i = (*pixel >> ((offset % 2) ? 4 : 0)) & 0xF;
-            return QString("Index: %1").arg(i);
+            return QStringLiteral("Index: %1").arg(i);
         }
         case Format::A4: {
             u8 a = (*pixel >> ((offset % 2) ? 4 : 0)) & 0xF;
-            return QString("Alpha: %1").arg(QString::number(a / 15.0f, 'f', 2));
+            return QStringLiteral("Alpha: %1").arg(QString::number(a / 15.0f, 'f', 2));
         }
         case Format::ETC1:
         case Format::ETC1A4:
             // TODO: Display block information or channel values?
-            return QString("Compressed data");
+            return QStringLiteral("Compressed data");
         case Format::D16: {
             auto value = Color::DecodeD16(pixel);
-            return QString("Depth: %1").arg(QString::number(value / (float)0xFFFF, 'f', 4));
+            return QStringLiteral("Depth: %1").arg(QString::number(value / (float)0xFFFF, 'f', 4));
         }
         case Format::D24: {
             auto value = Color::DecodeD24(pixel);
-            return QString("Depth: %1").arg(QString::number(value / (float)0xFFFFFF, 'f', 4));
+            return QStringLiteral("Depth: %1")
+                .arg(QString::number(value / (float)0xFFFFFF, 'f', 4));
         }
         case Format::D24X8:
         case Format::X24S8: {
             auto values = Color::DecodeD24S8(pixel);
-            return QString("Depth: %1, Stencil: %2")
+            return QStringLiteral("Depth: %1, Stencil: %2")
                 .arg(QString::number(values[0] / (float)0xFFFFFF, 'f', 4))
                 .arg(values[1]);
         }
         case Format::Unknown:
-            return QString("Unknown format");
+            return QStringLiteral("Unknown format");
         default:
-            return QString("Unhandled format");
+            return QStringLiteral("Unhandled format");
         }
-        return QString("");
+        return QString{};
     };
 
-    QString nibbles = "";
+    QString nibbles;
     for (unsigned i = 0; i < nibbles_per_pixel; i++) {
         unsigned nibble_index = i;
         if (nibble_mode) {
@@ -408,7 +413,7 @@ void GraphicsSurfaceWidget::Pick(int x, int y) {
     }
 
     surface_info_label->setText(
-        QString("Raw: 0x%3\n(%4)").arg(nibbles).arg(GetText(surface_format, pixel)));
+        QStringLiteral("Raw: 0x%3\n(%4)").arg(nibbles).arg(GetText(surface_format, pixel)));
     surface_info_label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 }
 
@@ -657,37 +662,53 @@ void GraphicsSurfaceWidget::OnUpdate() {
 }
 
 void GraphicsSurfaceWidget::SaveSurface() {
-    QString png_filter = tr("Portable Network Graphic (*.png)");
-    QString bin_filter = tr("Binary data (*.bin)");
+    const QString png_filter = tr("Portable Network Graphic (*.png)");
+    const QString bin_filter = tr("Binary data (*.bin)");
 
-    QString selectedFilter;
-    QString filename = QFileDialog::getSaveFileName(
+    QString selected_filter;
+    const QString filename = QFileDialog::getSaveFileName(
         this, tr("Save Surface"),
-        QString("texture-0x%1.png").arg(QString::number(surface_address, 16)),
-        QString("%1;;%2").arg(png_filter, bin_filter), &selectedFilter);
+        QStringLiteral("texture-0x%1.png").arg(QString::number(surface_address, 16)),
+        QStringLiteral("%1;;%2").arg(png_filter, bin_filter), &selected_filter);
 
     if (filename.isEmpty()) {
         // If the user canceled the dialog, don't save anything.
         return;
     }
 
-    if (selectedFilter == png_filter) {
-        const QPixmap* pixmap = surface_picture_label->pixmap();
+    if (selected_filter == png_filter) {
+        const QPixmap* const pixmap = surface_picture_label->pixmap();
         ASSERT_MSG(pixmap != nullptr, "No pixmap set");
 
-        QFile file(filename);
-        file.open(QIODevice::WriteOnly);
-        if (pixmap)
-            pixmap->save(&file, "PNG");
-    } else if (selectedFilter == bin_filter) {
-        const u8* buffer = Core::System::GetInstance().Memory().GetPhysicalPointer(surface_address);
+        QFile file{filename};
+        if (!file.open(QIODevice::WriteOnly)) {
+            QMessageBox::warning(this, tr("Error"), tr("Failed to open file '%1'").arg(filename));
+            return;
+        }
+
+        if (!pixmap->save(&file, "PNG")) {
+            QMessageBox::warning(this, tr("Error"),
+                                 tr("Failed to save surface data to file '%1'").arg(filename));
+        }
+    } else if (selected_filter == bin_filter) {
+        const u8* const buffer =
+            Core::System::GetInstance().Memory().GetPhysicalPointer(surface_address);
         ASSERT_MSG(buffer != nullptr, "Memory not accessible");
 
-        QFile file(filename);
-        file.open(QIODevice::WriteOnly);
-        int size = surface_width * surface_height * NibblesPerPixel(surface_format) / 2;
-        QByteArray data(reinterpret_cast<const char*>(buffer), size);
-        file.write(data);
+        QFile file{filename};
+        if (!file.open(QIODevice::WriteOnly)) {
+            QMessageBox::warning(this, tr("Error"), tr("Failed to open file '%1'").arg(filename));
+            return;
+        }
+
+        const int size = surface_width * surface_height * NibblesPerPixel(surface_format) / 2;
+        const QByteArray data(reinterpret_cast<const char*>(buffer), size);
+        if (file.write(data) != data.size()) {
+            QMessageBox::warning(
+                this, tr("Error"),
+                tr("Failed to completely write surface data to file. The saved data will "
+                   "likely be corrupt."));
+        }
     } else {
         UNREACHABLE_MSG("Unhandled filter selected");
     }

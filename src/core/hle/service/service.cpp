@@ -98,6 +98,7 @@ const std::array<ServiceModuleInfo, 40> service_module_map{
      {"HTTP", 0x00040130'00002902, HTTP::InstallInterfaces},
      {"SOC", 0x00040130'00002E02, SOC::InstallInterfaces},
      {"SSL", 0x00040130'00002F02, SSL::InstallInterfaces},
+     {"PS", 0x00040130'00003102, PS::InstallInterfaces},
      // no HLE implementation
      {"CDC", 0x00040130'00001802, nullptr},
      {"GPIO", 0x00040130'00001B02, nullptr},
@@ -105,14 +106,14 @@ const std::array<ServiceModuleInfo, 40> service_module_map{
      {"MCU", 0x00040130'00001F02, nullptr},
      {"MP", 0x00040130'00002A02, nullptr},
      {"PDN", 0x00040130'00002102, nullptr},
-     {"PS", 0x00040130'00003102, nullptr},
      {"SPI", 0x00040130'00002302, nullptr}}};
 
 /**
  * Creates a function string for logging, complete with the name (or header code, depending
  * on what's passed in) the port name, and all the cmd_buff arguments.
  */
-[[maybe_unused]] static std::string MakeFunctionString(const char* name, const char* port_name,
+[[maybe_unused]] static std::string MakeFunctionString(std::string_view name,
+                                                       std::string_view port_name,
                                                        const u32* cmd_buff) {
     // Number of params == bits 0-5 + bits 6-11
     int num_params = (cmd_buff[0] & 0x3F) + ((cmd_buff[0] >> 6) & 0x3F);
@@ -179,7 +180,7 @@ void ServiceFrameworkBase::HandleSyncRequest(Kernel::HLERequestContext& context)
     }
 
     LOG_TRACE(Service, "{}",
-              MakeFunctionString(info->name, GetServiceName().c_str(), context.CommandBuffer()));
+              MakeFunctionString(info->name, GetServiceName(), context.CommandBuffer()));
     handler_invoker(this, info->handler_callback, context);
 }
 

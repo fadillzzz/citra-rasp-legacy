@@ -83,7 +83,7 @@ private:
                            Kernel::HLERequestContext& ctx);
 
     ServiceFrameworkBase(const char* service_name, u32 max_sessions, InvokerFn* handler_invoker);
-    ~ServiceFrameworkBase();
+    ~ServiceFrameworkBase() override;
 
     void RegisterHandlersBase(const FunctionInfoBase* functions, std::size_t n);
     void ReportUnimplementedFunction(u32* cmd_buf, const FunctionInfoBase* info);
@@ -156,7 +156,7 @@ protected:
         RegisterHandlersBase(functions, n);
     }
 
-    std::unique_ptr<SessionDataBase> MakeSessionData() const override {
+    std::unique_ptr<SessionDataBase> MakeSessionData() override {
         return std::make_unique<SessionData>();
     }
 

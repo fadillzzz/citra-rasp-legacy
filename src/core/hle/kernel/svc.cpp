@@ -1292,13 +1292,11 @@ ResultCode SVC::CreatePort(Handle* server_port, Handle* client_port, VAddr name_
 
     std::shared_ptr<Process> current_process = kernel.GetCurrentProcess();
 
-    auto ports = kernel.CreatePortPair(max_sessions);
-    CASCADE_RESULT(*client_port, current_process->handle_table.Create(
-                                     std::move(std::get<std::shared_ptr<ClientPort>>(ports))));
+    auto [server, client] = kernel.CreatePortPair(max_sessions);
+    CASCADE_RESULT(*client_port, current_process->handle_table.Create(std::move(client)));
     // Note: The 3DS kernel also leaks the client port handle if the server port handle fails to be
     // created.
-    CASCADE_RESULT(*server_port, current_process->handle_table.Create(
-                                     std::move(std::get<std::shared_ptr<ServerPort>>(ports))));
+    CASCADE_RESULT(*server_port, current_process->handle_table.Create(std::move(server)));
 
     LOG_TRACE(Kernel_SVC, "called max_sessions={}", max_sessions);
     return RESULT_SUCCESS;
@@ -1317,14 +1315,12 @@ ResultCode SVC::CreateSessionToPort(Handle* out_client_session, Handle client_po
 }
 
 ResultCode SVC::CreateSession(Handle* server_session, Handle* client_session) {
-    auto sessions = kernel.CreateSessionPair();
+    auto [server, client] = kernel.CreateSessionPair();
 
     std::shared_ptr<Process> current_process = kernel.GetCurrentProcess();
 
-    auto& server = std::get<std::shared_ptr<ServerSession>>(sessions);
     CASCADE_RESULT(*server_session, current_process->handle_table.Create(std::move(server)));
 
-    auto& client = std::get<std::shared_ptr<ClientSession>>(sessions);
     CASCADE_RESULT(*client_session, current_process->handle_table.Create(std::move(client)));
 
     LOG_TRACE(Kernel_SVC, "called");
@@ -1575,7 +1571,7 @@ void SVC::CallSVC(u32 immediate) {
     MICROPROFILE_SCOPE(Kernel_SVC);
 
     // Lock the global kernel mutex when we enter the kernel HLE.
-    std::lock_guard<std::recursive_mutex> lock(HLE::g_hle_lock);
+    std::lock_guard lock{HLE::g_hle_lock};
 
     DEBUG_ASSERT_MSG(kernel.GetCurrentProcess()->status == ProcessStatus::Running,
                      "Running threads from exiting processes is unimplemented");

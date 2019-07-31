@@ -9,13 +9,13 @@
 
 ConfigureUi::ConfigureUi(QWidget* parent) : QWidget(parent), ui(new Ui::ConfigureUi) {
     ui->setupUi(this);
-    ui->language_combobox->addItem(tr("<System>"), QString(""));
-    ui->language_combobox->addItem(tr("English"), QString("en"));
-    QDirIterator it(":/languages", QDirIterator::NoIteratorFlags);
+    ui->language_combobox->addItem(tr("<System>"), QString{});
+    ui->language_combobox->addItem(tr("English"), QStringLiteral("en"));
+    QDirIterator it(QStringLiteral(":/languages"), QDirIterator::NoIteratorFlags);
     while (it.hasNext()) {
         QString locale = it.next();
-        locale.truncate(locale.lastIndexOf('.'));
-        locale.remove(0, locale.lastIndexOf('/') + 1);
+        locale.truncate(locale.lastIndexOf(QLatin1Char{'.'}));
+        locale.remove(0, locale.lastIndexOf(QLatin1Char{'/'}) + 1);
         QString lang = QLocale::languageToString(QLocale(locale).language());
         ui->language_combobox->addItem(lang, locale);
     }
@@ -25,18 +25,19 @@ ConfigureUi::ConfigureUi(QWidget* parent) : QWidget(parent), ui(new Ui::Configur
     // retranslating when passing back.
     connect(ui->language_combobox,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
-            &ConfigureUi::onLanguageChanged);
+            &ConfigureUi::OnLanguageChanged);
 
     for (const auto& theme : UISettings::themes) {
-        ui->theme_combobox->addItem(theme.first, theme.second);
+        ui->theme_combobox->addItem(QString::fromUtf8(theme.first),
+                                    QString::fromUtf8(theme.second));
     }
 
-    this->setConfiguration();
+    SetConfiguration();
 }
 
 ConfigureUi::~ConfigureUi() = default;
 
-void ConfigureUi::setConfiguration() {
+void ConfigureUi::SetConfiguration() {
     ui->theme_combobox->setCurrentIndex(ui->theme_combobox->findData(UISettings::values.theme));
     ui->language_combobox->setCurrentIndex(
         ui->language_combobox->findData(UISettings::values.language));
@@ -48,7 +49,7 @@ void ConfigureUi::setConfiguration() {
     ui->toggle_hide_no_icon->setChecked(UISettings::values.game_list_hide_no_icon);
 }
 
-void ConfigureUi::applyConfiguration() {
+void ConfigureUi::ApplyConfiguration() {
     UISettings::values.theme =
         ui->theme_combobox->itemData(ui->theme_combobox->currentIndex()).toString();
     UISettings::values.game_list_icon_size =
@@ -60,13 +61,13 @@ void ConfigureUi::applyConfiguration() {
     UISettings::values.game_list_hide_no_icon = ui->toggle_hide_no_icon->isChecked();
 }
 
-void ConfigureUi::onLanguageChanged(int index) {
+void ConfigureUi::OnLanguageChanged(int index) {
     if (index == -1)
         return;
 
-    emit languageChanged(ui->language_combobox->itemData(index).toString());
+    emit LanguageChanged(ui->language_combobox->itemData(index).toString());
 }
 
-void ConfigureUi::retranslateUi() {
+void ConfigureUi::RetranslateUI() {
     ui->retranslateUi(this);
 }

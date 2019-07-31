@@ -10,15 +10,20 @@
 #include "core/settings.h"
 #include "ui_configure.h"
 
-ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry)
-    : QDialog(parent), registry(registry), ui(new Ui::ConfigureDialog) {
+ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry, bool enable_web_config)
+    : QDialog(parent), ui(new Ui::ConfigureDialog), registry(registry) {
     ui->setupUi(this);
     ui->hotkeysTab->Populate(registry);
+    ui->webTab->SetWebServiceConfigEnabled(enable_web_config);
 
-    this->PopulateSelectionList();
-    connect(ui->uiTab, &ConfigureUi::languageChanged, this, &ConfigureDialog::onLanguageChanged);
+    PopulateSelectionList();
+
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
+    connect(ui->uiTab, &ConfigureUi::LanguageChanged, this, &ConfigureDialog::OnLanguageChanged);
     connect(ui->selectorList, &QListWidget::itemSelectionChanged, this,
             &ConfigureDialog::UpdateVisibleTabs);
+
     adjustSize();
     ui->selectorList->setCurrentRow(0);
 
@@ -35,30 +40,30 @@ ConfigureDialog::ConfigureDialog(QWidget* parent, HotkeyRegistry& registry)
 
 ConfigureDialog::~ConfigureDialog() = default;
 
-void ConfigureDialog::setConfiguration() {
-    ui->generalTab->setConfiguration();
-    ui->systemTab->setConfiguration();
-    ui->inputTab->loadConfiguration();
-    ui->graphicsTab->setConfiguration();
-    ui->audioTab->setConfiguration();
-    ui->cameraTab->setConfiguration();
-    ui->debugTab->setConfiguration();
-    ui->webTab->setConfiguration();
-    ui->uiTab->setConfiguration();
+void ConfigureDialog::SetConfiguration() {
+    ui->generalTab->SetConfiguration();
+    ui->systemTab->SetConfiguration();
+    ui->inputTab->LoadConfiguration();
+    ui->graphicsTab->SetConfiguration();
+    ui->audioTab->SetConfiguration();
+    ui->cameraTab->SetConfiguration();
+    ui->debugTab->SetConfiguration();
+    ui->webTab->SetConfiguration();
+    ui->uiTab->SetConfiguration();
 }
 
-void ConfigureDialog::applyConfiguration() {
-    ui->generalTab->applyConfiguration();
-    ui->systemTab->applyConfiguration();
-    ui->inputTab->applyConfiguration();
+void ConfigureDialog::ApplyConfiguration() {
+    ui->generalTab->ApplyConfiguration();
+    ui->systemTab->ApplyConfiguration();
+    ui->inputTab->ApplyConfiguration();
     ui->inputTab->ApplyProfile();
-    ui->hotkeysTab->applyConfiguration(registry);
-    ui->graphicsTab->applyConfiguration();
-    ui->audioTab->applyConfiguration();
-    ui->cameraTab->applyConfiguration();
-    ui->debugTab->applyConfiguration();
-    ui->webTab->applyConfiguration();
-    ui->uiTab->applyConfiguration();
+    ui->hotkeysTab->ApplyConfiguration(registry);
+    ui->graphicsTab->ApplyConfiguration();
+    ui->audioTab->ApplyConfiguration();
+    ui->cameraTab->ApplyConfiguration();
+    ui->debugTab->ApplyConfiguration();
+    ui->webTab->ApplyConfiguration();
+    ui->uiTab->ApplyConfiguration();
     Settings::Apply();
     Settings::LogSettings();
 }
@@ -81,15 +86,15 @@ void ConfigureDialog::PopulateSelectionList() {
     }
 }
 
-void ConfigureDialog::onLanguageChanged(const QString& locale) {
-    emit languageChanged(locale);
+void ConfigureDialog::OnLanguageChanged(const QString& locale) {
+    emit LanguageChanged(locale);
     // first apply the configuration, and then restore the display
-    applyConfiguration();
-    retranslateUi();
-    setConfiguration();
+    ApplyConfiguration();
+    RetranslateUI();
+    SetConfiguration();
 }
 
-void ConfigureDialog::retranslateUi() {
+void ConfigureDialog::RetranslateUI() {
     int old_row = ui->selectorList->currentRow();
     int old_index = ui->tabWidget->currentIndex();
     ui->retranslateUi(this);
@@ -98,16 +103,16 @@ void ConfigureDialog::retranslateUi() {
     ui->selectorList->setCurrentRow(old_row);
     ui->tabWidget->setCurrentIndex(old_index);
 
-    ui->generalTab->retranslateUi();
-    ui->systemTab->retranslateUi();
-    ui->inputTab->retranslateUi();
-    ui->hotkeysTab->retranslateUi();
-    ui->graphicsTab->retranslateUi();
-    ui->audioTab->retranslateUi();
-    ui->cameraTab->retranslateUi();
-    ui->debugTab->retranslateUi();
-    ui->webTab->retranslateUi();
-    ui->uiTab->retranslateUi();
+    ui->generalTab->RetranslateUI();
+    ui->systemTab->RetranslateUI();
+    ui->inputTab->RetranslateUI();
+    ui->hotkeysTab->RetranslateUI();
+    ui->graphicsTab->RetranslateUI();
+    ui->audioTab->RetranslateUI();
+    ui->cameraTab->RetranslateUI();
+    ui->debugTab->RetranslateUI();
+    ui->webTab->RetranslateUI();
+    ui->uiTab->RetranslateUI();
 }
 
 void ConfigureDialog::UpdateVisibleTabs() {
@@ -116,11 +121,11 @@ void ConfigureDialog::UpdateVisibleTabs() {
         return;
 
     const std::map<QString, QWidget*> widgets = {
-        {"General", ui->generalTab},   {"System", ui->systemTab},
-        {"Input", ui->inputTab},       {"Hotkeys", ui->hotkeysTab},
-        {"Graphics", ui->graphicsTab}, {"Audio", ui->audioTab},
-        {"Camera", ui->cameraTab},     {"Debug", ui->debugTab},
-        {"Web", ui->webTab},           {"UI", ui->uiTab}};
+        {QStringLiteral("General"), ui->generalTab},   {QStringLiteral("System"), ui->systemTab},
+        {QStringLiteral("Input"), ui->inputTab},       {QStringLiteral("Hotkeys"), ui->hotkeysTab},
+        {QStringLiteral("Graphics"), ui->graphicsTab}, {QStringLiteral("Audio"), ui->audioTab},
+        {QStringLiteral("Camera"), ui->cameraTab},     {QStringLiteral("Debug"), ui->debugTab},
+        {QStringLiteral("Web"), ui->webTab},           {QStringLiteral("UI"), ui->uiTab}};
 
     ui->tabWidget->clear();
 
