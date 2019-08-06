@@ -1,6 +1,6 @@
 #include <vector>
-#include "common/common_types.h"
 #include "common/assert.h"
+#include "common/common_types.h"
 
 namespace Common {
 void FlipRGBA8Texture(std::vector<u8>& tex, u64 width, u64 height) {
@@ -19,4 +19,4 @@ void FlipRGBA8Texture(std::vector<u8>& tex, u64 width, u64 height) {
     }
     delete[] temp_row;
 }
-}
+} // namespace Common
