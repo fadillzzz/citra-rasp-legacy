@@ -870,10 +870,10 @@ bool CachedSurface::LoadCustomTextures(u64 tex_hash, Core::CustomTexInfo& tex_in
         if (FileUtil::Exists(load_path)) {
             u32 lodepng_ret =
                 lodepng::decode(tex_info.tex, tex_info.width, tex_info.height, load_path);
-            if (lodepng_ret)
+            if (lodepng_ret) {
                 LOG_CRITICAL(Render_OpenGL, "Failed to load custom texture: {}",
                              lodepng_error_text(lodepng_ret));
-            else {
+            } else {
                 LOG_INFO(Render_OpenGL, "Loaded custom texture from {}", load_path);
                 Common::FlipRGBA8Texture(tex_info.tex, tex_info.width, tex_info.height);
                 custom_tex_cache.CacheTexture(tex_hash, tex_info.tex, tex_info.width,
