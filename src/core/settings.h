@@ -167,6 +167,7 @@ struct Values {
     std::atomic<u8> factor_3d;
 
     bool dump_textures;
+    bool custom_textures;
 
     // Audio
     bool enable_dsp_lle;

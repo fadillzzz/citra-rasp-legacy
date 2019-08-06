@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include "common/common_types.h"
+#include "core/custom_tex_cache.h"
 #include "core/frontend/applets/mii_selector.h"
 #include "core/frontend/applets/swkbd.h"
 #include "core/loader/loader.h"
@@ -206,6 +207,12 @@ public:
     /// Gets a const reference to the cheat engine
     const Cheats::CheatEngine& CheatEngine() const;
 
+    /// Gets a reference to the custom texture cache system
+    Core::CustomTexCache& CustomTexCache();
+
+    /// Gets a const reference to the custom texture cache system
+    const Core::CustomTexCache& CustomTexCache() const;
+
     PerfStats perf_stats;
     FrameLimiter frame_limiter;
 
@@ -275,6 +282,9 @@ private:
 
     /// Cheats manager
     std::unique_ptr<Cheats::CheatEngine> cheat_engine;
+
+    /// Custom texture cache system
+    std::unique_ptr<Core::CustomTexCache> custom_tex_cache;
 
     /// RPC Server for scripting support
     std::unique_ptr<RPC::RPCServer> rpc_server;

@@ -16,6 +16,7 @@
 #include "core/cheats/cheats.h"
 #include "core/core.h"
 #include "core/core_timing.h"
+#include "core/custom_tex_cache.h"
 #include "core/gdbstub/gdbstub.h"
 #include "core/hle/kernel/client_port.h"
 #include "core/hle/kernel/kernel.h"
@@ -142,6 +143,7 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
         }
     }
     cheat_engine = std::make_unique<Cheats::CheatEngine>(*this);
+    custom_tex_cache = std::make_unique<Core::CustomTexCache>();
     status = ResultStatus::Success;
     m_emu_window = &emu_window;
     m_filepath = filepath;
@@ -272,6 +274,14 @@ Cheats::CheatEngine& System::CheatEngine() {
 
 const Cheats::CheatEngine& System::CheatEngine() const {
     return *cheat_engine;
+}
+
+Core::CustomTexCache& System::CustomTexCache() {
+    return *custom_tex_cache;
+}
+
+const Core::CustomTexCache& System::CustomTexCache() const {
+    return *custom_tex_cache;
 }
 
 void System::RegisterMiiSelector(std::shared_ptr<Frontend::MiiSelector> mii_selector) {
