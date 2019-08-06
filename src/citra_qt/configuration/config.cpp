@@ -194,6 +194,7 @@ void Config::ReadValues() {
     qt_config->beginGroup("Utility");
     Settings::values.dump_textures = ReadSetting("dump_textures", false).toBool();
     Settings::values.custom_textures = ReadSetting("custom_textures", false).toBool();
+    Settings::values.preload_textures = ReadSetting("preload_textures", false).toBool();
     qt_config->endGroup();
 
     qt_config->beginGroup("Audio");
@@ -488,6 +489,7 @@ void Config::SaveValues() {
     qt_config->beginGroup("Utility");
     WriteSetting("dump_textures", Settings::values.dump_textures, false);
     WriteSetting("custom_textures", Settings::values.custom_textures, false);
+    WriteSetting("preload_textures", Settings::values.preload_textures, false);
     qt_config->endGroup();
 
     qt_config->beginGroup("Audio");

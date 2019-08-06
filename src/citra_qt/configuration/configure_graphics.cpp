@@ -48,6 +48,13 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
         const QIcon color_icon(pixmap);
         ui->bg_button->setIcon(color_icon);
     });
+
+    ui->toggle_preload_textures->setEnabled(ui->toggle_custom_textures->isChecked());
+    connect(ui->toggle_custom_textures, &QCheckBox::toggled, this, [this] {
+        ui->toggle_preload_textures->setEnabled(ui->toggle_custom_textures->isChecked());
+        if (!ui->toggle_preload_textures->isEnabled())
+            ui->toggle_preload_textures->setChecked(false);
+    });
 }
 
 ConfigureGraphics::~ConfigureGraphics() = default;
@@ -67,6 +74,8 @@ void ConfigureGraphics::SetConfiguration() {
     ui->layout_combobox->setCurrentIndex(static_cast<int>(Settings::values.layout_option));
     ui->swap_screen->setChecked(Settings::values.swap_screen);
     ui->toggle_dump_textures->setChecked(Settings::values.dump_textures);
+    ui->toggle_custom_textures->setChecked(Settings::values.custom_textures);
+    ui->toggle_preload_textures->setChecked(Settings::values.preload_textures);
     bg_color = QColor::fromRgbF(Settings::values.bg_red, Settings::values.bg_green,
                                 Settings::values.bg_blue);
     QPixmap pixmap(ui->bg_button->size());
@@ -92,6 +101,7 @@ void ConfigureGraphics::ApplyConfiguration() {
     Settings::values.swap_screen = ui->swap_screen->isChecked();
     Settings::values.dump_textures = ui->toggle_dump_textures->isChecked();
     Settings::values.custom_textures = ui->toggle_custom_textures->isChecked();
+    Settings::values.preload_textures = ui->toggle_preload_textures->isChecked();
     Settings::values.bg_red = static_cast<float>(bg_color.redF());
     Settings::values.bg_green = static_cast<float>(bg_color.greenF());
     Settings::values.bg_blue = static_cast<float>(bg_color.blueF());
