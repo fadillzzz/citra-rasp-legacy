@@ -20,10 +20,7 @@ bool QtImageInterface::DecodePNG(std::vector<u8>& dst, u32& width, u32& height,
     width = image.width();
     height = image.height();
 
-    // Convert to RGBA8
-    image = image.convertToFormat(QImage::Format_RGBA8888, Qt::AutoColor);
-
-    // Write to vector
+    // Write RGBA8 to vector
     for (u32 y = 1; y < image.height() + 1; y++) {
         for (u32 x = 1; x < image.width() + 1; x++) {
             const QColor pixel(image.pixel(y, x));
