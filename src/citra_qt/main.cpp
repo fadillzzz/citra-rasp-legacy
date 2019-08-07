@@ -42,6 +42,7 @@
 #include "citra_qt/hotkeys.h"
 #include "citra_qt/main.h"
 #include "citra_qt/multiplayer/state.h"
+#include "citra_qt/qt_image_interface.h"
 #include "citra_qt/ui_settings.h"
 #include "citra_qt/updater/updater.h"
 #include "citra_qt/util/clickable_label.h"
@@ -1904,6 +1905,9 @@ int main(int argc, char* argv[]) {
     Frontend::RegisterDefaultApplets();
     Core::System::GetInstance().RegisterMiiSelector(std::make_shared<QtMiiSelector>(main_window));
     Core::System::GetInstance().RegisterSoftwareKeyboard(std::make_shared<QtKeyboard>(main_window));
+
+    // Register Qt image interface
+    Core::System::GetInstance().RegisterImageInterface(std::make_shared<QtImageInterface>());
 
     main_window.show();
     int result = app.exec();

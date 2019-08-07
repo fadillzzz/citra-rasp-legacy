@@ -108,6 +108,8 @@ add_executable(citra-qt
     multiplayer/state.cpp
     multiplayer/state.h
     multiplayer/validation.h
+    qt_image_interface.cpp
+    qt_image_interface.h
     ui_settings.cpp
     ui_settings.h
     updater/updater.cpp
