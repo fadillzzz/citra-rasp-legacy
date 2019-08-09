@@ -32,6 +32,7 @@ enum class UserPath {
     NANDDir,
     RootDir,
     SDMCDir,
+    ShaderDir,
     SysDataDir,
     UserDir,
 };
