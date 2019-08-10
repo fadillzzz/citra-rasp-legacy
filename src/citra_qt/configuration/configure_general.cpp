@@ -15,6 +15,8 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
     ui->setupUi(this);
     SetConfiguration();
 
+    connect(ui->toggle_frame_limit, &QCheckBox::toggled, ui->frame_limit, &QSpinBox::setEnabled);
+
     ui->updateBox->setVisible(UISettings::values.updater_found);
     connect(ui->button_reset_defaults, &QPushButton::clicked, this,
             &ConfigureGeneral::ResetDefaults);
@@ -23,6 +25,10 @@ ConfigureGeneral::ConfigureGeneral(QWidget* parent)
 ConfigureGeneral::~ConfigureGeneral() = default;
 
 void ConfigureGeneral::SetConfiguration() {
+    ui->toggle_frame_limit->setChecked(Settings::values.use_frame_limit);
+    ui->frame_limit->setEnabled(ui->toggle_frame_limit->isChecked());
+    ui->frame_limit->setValue(Settings::values.frame_limit);
+
     ui->toggle_check_exit->setChecked(UISettings::values.confirm_before_closing);
 
     ui->toggle_update_check->setChecked(UISettings::values.check_for_update_on_start);
@@ -46,6 +52,9 @@ void ConfigureGeneral::ResetDefaults() {
 }
 
 void ConfigureGeneral::ApplyConfiguration() {
+    Settings::values.use_frame_limit = ui->toggle_frame_limit->isChecked();
+    Settings::values.frame_limit = ui->frame_limit->value();
+
     UISettings::values.confirm_before_closing = ui->toggle_check_exit->isChecked();
 
     UISettings::values.check_for_update_on_start = ui->toggle_update_check->isChecked();

@@ -45,6 +45,7 @@ void ConfigureDialog::SetConfiguration() {
     ui->systemTab->SetConfiguration();
     ui->inputTab->LoadConfiguration();
     ui->graphicsTab->SetConfiguration();
+    ui->enhancementsTab->SetConfiguration();
     ui->audioTab->SetConfiguration();
     ui->cameraTab->SetConfiguration();
     ui->debugTab->SetConfiguration();
@@ -59,6 +60,7 @@ void ConfigureDialog::ApplyConfiguration() {
     ui->inputTab->ApplyProfile();
     ui->hotkeysTab->ApplyConfiguration(registry);
     ui->graphicsTab->ApplyConfiguration();
+    ui->enhancementsTab->ApplyConfiguration();
     ui->audioTab->ApplyConfiguration();
     ui->cameraTab->ApplyConfiguration();
     ui->debugTab->ApplyConfiguration();
@@ -75,7 +77,7 @@ void ConfigureDialog::PopulateSelectionList() {
         {{tr("General"),
           {QT_TR_NOOP("General"), QT_TR_NOOP("Web"), QT_TR_NOOP("Debug"), QT_TR_NOOP("UI")}},
          {tr("System"), {QT_TR_NOOP("System"), QT_TR_NOOP("Audio"), QT_TR_NOOP("Camera")}},
-         {tr("Graphics"), {QT_TR_NOOP("Graphics")}},
+         {tr("Graphics"), {QT_TR_NOOP("Enhancements"), QT_TR_NOOP("Advanced")}},
          {tr("Controls"), {QT_TR_NOOP("Input"), QT_TR_NOOP("Hotkeys")}}}};
 
     for (const auto& entry : items) {
@@ -108,6 +110,7 @@ void ConfigureDialog::RetranslateUI() {
     ui->inputTab->RetranslateUI();
     ui->hotkeysTab->RetranslateUI();
     ui->graphicsTab->RetranslateUI();
+    ui->enhancementsTab->RetranslateUI();
     ui->audioTab->RetranslateUI();
     ui->cameraTab->RetranslateUI();
     ui->debugTab->RetranslateUI();
@@ -121,11 +124,18 @@ void ConfigureDialog::UpdateVisibleTabs() {
         return;
 
     const std::map<QString, QWidget*> widgets = {
-        {QStringLiteral("General"), ui->generalTab},   {QStringLiteral("System"), ui->systemTab},
-        {QStringLiteral("Input"), ui->inputTab},       {QStringLiteral("Hotkeys"), ui->hotkeysTab},
-        {QStringLiteral("Graphics"), ui->graphicsTab}, {QStringLiteral("Audio"), ui->audioTab},
-        {QStringLiteral("Camera"), ui->cameraTab},     {QStringLiteral("Debug"), ui->debugTab},
-        {QStringLiteral("Web"), ui->webTab},           {QStringLiteral("UI"), ui->uiTab}};
+        {QStringLiteral("General"), ui->generalTab},
+        {QStringLiteral("System"), ui->systemTab},
+        {QStringLiteral("Input"), ui->inputTab},
+        {QStringLiteral("Hotkeys"), ui->hotkeysTab},
+        {QStringLiteral("Advanced"), ui->graphicsTab},
+        {QStringLiteral("Enhancements"), ui->enhancementsTab},
+        {QStringLiteral("Audio"), ui->audioTab},
+        {QStringLiteral("Camera"), ui->cameraTab},
+        {QStringLiteral("Debug"), ui->debugTab},
+        {QStringLiteral("Web"), ui->webTab},
+        {QStringLiteral("UI"), ui->uiTab},
+    };
 
     ui->tabWidget->clear();
 

@@ -48,6 +48,11 @@
          <string>Graphics</string>
         </attribute>
        </widget>
+       <widget class="ConfigureEnhancements" name="enhancementsTab">
+         <attribute name="title">
+           <string>Enhancements</string>
+         </attribute>
+       </widget>
        <widget class="ConfigureAudio" name="audioTab">
         <attribute name="title">
          <string>Audio</string>
