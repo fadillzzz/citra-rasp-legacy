@@ -186,10 +186,11 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
     }
     cheat_engine = std::make_unique<Cheats::CheatEngine>(*this);
     custom_tex_cache = std::make_unique<Core::CustomTexCache>();
-    if (Settings::values.custom_textures)
+    if (Settings::values.custom_textures) {
         FileUtil::CreateFullPath(fmt::format("{}textures/{:016X}/",
                                              FileUtil::GetUserPath(FileUtil::UserPath::LoadDir),
                                              Kernel().GetCurrentProcess()->codeset->program_id));
+    }
     if (Settings::values.preload_textures)
         PreloadCustomTextures();
     status = ResultStatus::Success;
