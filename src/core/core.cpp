@@ -18,6 +18,8 @@
 #include "core/core.h"
 #include "core/core_timing.h"
 #include "core/custom_tex_cache.h"
+#include "core/dumping/backend.h"
+#include "core/dumping/ffmpeg_backend.h"
 #include "core/gdbstub/gdbstub.h"
 #include "core/hle/kernel/client_port.h"
 #include "core/hle/kernel/kernel.h"
@@ -268,6 +270,12 @@ System::ResultStatus System::Init(Frontend::EmuWindow& emu_window, u32 system_mo
         return result;
     }
 
+#ifdef ENABLE_FFMPEG
+    video_dumper = std::make_unique<VideoDumper::FFmpegBackend>();
+#else
+    video_dumper = std::make_unique<VideoDumper::NullBackend>();
+#endif
+
     LOG_DEBUG(Core, "Initialized OK");
 
     // Reset counters and set time origin to current frame
@@ -333,6 +341,14 @@ const Core::CustomTexCache& System::CustomTexCache() const {
     return *custom_tex_cache;
 }
 
+VideoDumper::Backend& System::VideoDumper() {
+    return *video_dumper;
+}
+
+const VideoDumper::Backend& System::VideoDumper() const {
+    return *video_dumper;
+}
+
 void System::RegisterMiiSelector(std::shared_ptr<Frontend::MiiSelector> mii_selector) {
     registered_mii_selector = std::move(mii_selector);
 }
@@ -368,6 +384,10 @@ void System::Shutdown() {
     kernel.reset();
     timing.reset();
     app_loader.reset();
+
+    if (video_dumper->IsDumping()) {
+        video_dumper->StopDumping();
+    }
 
     if (auto room_member = Network::GetRoomMember().lock()) {
         Network::GameInfo game_info{};

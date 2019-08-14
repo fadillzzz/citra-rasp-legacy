@@ -51,6 +51,10 @@ namespace Cheats {
 class CheatEngine;
 }
 
+namespace VideoDumper {
+class Backend;
+}
+
 namespace Core {
 
 class Timing;
@@ -217,6 +221,12 @@ public:
     /// Handles loading all custom textures from disk into cache.
     void PreloadCustomTextures();
 
+    /// Gets a reference to the video dumper backend
+    VideoDumper::Backend& VideoDumper();
+
+    /// Gets a const reference to the video dumper backend
+    const VideoDumper::Backend& VideoDumper() const;
+
     PerfStats perf_stats;
     FrameLimiter frame_limiter;
 
@@ -300,6 +310,9 @@ private:
 
     /// Image interface
     std::shared_ptr<Frontend::ImageInterface> registered_image_interface;
+
+    /// Video dumper backend
+    std::unique_ptr<VideoDumper::Backend> video_dumper;
 
     /// RPC Server for scripting support
     std::unique_ptr<RPC::RPCServer> rpc_server;

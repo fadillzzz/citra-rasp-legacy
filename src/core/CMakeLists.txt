@@ -38,6 +38,8 @@ add_library(core STATIC
     core_timing.h
     custom_tex_cache.cpp
     custom_tex_cache.h
+    dumping/backend.cpp
+    dumping/backend.h
     file_sys/archive_backend.cpp
     file_sys/archive_backend.h
     file_sys/archive_extsavedata.cpp
@@ -447,6 +449,13 @@ add_library(core STATIC
     tracer/recorder.h
 )
 
+if (ENABLE_FFMPEG)
+    target_sources(core PRIVATE
+        dumping/ffmpeg_backend.cpp
+        dumping/ffmpeg_backend.h
+    )
+endif()
+
 create_target_directory_groups(core)
 
 target_link_libraries(core PUBLIC common PRIVATE audio_core network video_core)
@@ -464,4 +473,8 @@ if (ARCHITECTURE_x86_64)
         arm/dynarmic/arm_dynarmic_cp15.h
     )
     target_link_libraries(core PRIVATE dynarmic)
+endif()
+
+if (ENABLE_FFMPEG)
+    target_link_libraries(core PRIVATE FFmpeg::avcodec FFmpeg::avformat FFmpeg::swscale FFmpeg::swresample FFmpeg::avutil)
 endif()
