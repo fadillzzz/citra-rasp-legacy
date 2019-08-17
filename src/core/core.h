@@ -218,9 +218,6 @@ public:
     /// Gets a const reference to the custom texture cache system
     const Core::CustomTexCache& CustomTexCache() const;
 
-    /// Handles loading all custom textures from disk into cache.
-    void PreloadCustomTextures();
-
     /// Gets a reference to the video dumper backend
     VideoDumper::Backend& VideoDumper();
 
