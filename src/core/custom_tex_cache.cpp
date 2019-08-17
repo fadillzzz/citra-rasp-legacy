@@ -34,7 +34,7 @@ void CustomTexCache::CacheTexture(u64 hash, const std::vector<u8>& tex, u32 widt
 }
 
 void CustomTexCache::AddTexturePath(u64 hash, const std::string& path) {
-    if (custom_textures.count(hash))
+    if (custom_texture_paths.count(hash))
         LOG_ERROR(Core, "Textures {} and {} conflict!", custom_texture_paths[hash].path, path);
     else
         custom_texture_paths[hash] = {path, hash};
