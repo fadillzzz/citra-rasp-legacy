@@ -19,7 +19,9 @@
 #include "core/core_timing.h"
 #include "core/custom_tex_cache.h"
 #include "core/dumping/backend.h"
+#ifdef ENABLE_FFMPEG
 #include "core/dumping/ffmpeg_backend.h"
+#endif
 #include "core/gdbstub/gdbstub.h"
 #include "core/hle/kernel/client_port.h"
 #include "core/hle/kernel/kernel.h"
