@@ -174,6 +174,7 @@ struct Values {
     bool dump_textures;
     bool custom_textures;
     bool preload_textures;
+
     // Audio
     bool enable_dsp_lle;
     bool enable_dsp_lle_multithread;
