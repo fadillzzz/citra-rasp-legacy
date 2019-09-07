@@ -160,6 +160,7 @@ void Config::ReadValues() {
 #else
     Settings::values.use_hw_shader = ReadSetting("use_hw_shader", true).toBool();
 #endif
+    Settings::values.use_disk_shader_cache = ReadSetting("use_disk_shader_cache", false).toBool();
     Settings::values.shaders_accurate_mul = ReadSetting("shaders_accurate_mul", false).toBool();
     Settings::values.use_shader_jit = ReadSetting("use_shader_jit", true).toBool();
     Settings::values.resolution_factor =
@@ -461,6 +462,7 @@ void Config::SaveValues() {
     qt_config->beginGroup("Renderer");
     WriteSetting("use_hw_renderer", Settings::values.use_hw_renderer, true);
     WriteSetting("use_hw_shader", Settings::values.use_hw_shader, true);
+    WriteSetting("use_disk_shader_cache", Settings::values.use_disk_shader_cache, false);
     WriteSetting("shaders_accurate_mul", Settings::values.shaders_accurate_mul, false);
     WriteSetting("use_shader_jit", Settings::values.use_shader_jit, true);
     WriteSetting("resolution_factor", Settings::values.resolution_factor, 1);
