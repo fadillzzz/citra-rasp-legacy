@@ -43,3 +43,6 @@
 [submodule "teakra"]
     path = externals/teakra
     url = https://github.com/wwylele/teakra.git
+[submodule "externals/zstd"]
+    path = externals/zstd
+    url = https://github.com/facebook/zstd.git
