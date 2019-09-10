@@ -11,8 +11,6 @@
 #include "video_core/renderer_opengl/gl_shader_disk_cache.h"
 #include "video_core/renderer_opengl/gl_shader_manager.h"
 
-#pragma optimize(off, "")
-
 namespace OpenGL {
 
 static u64 GetUniqueIdentifier(const Pica::Regs& regs, const ProgramCode& code) {
@@ -190,6 +188,8 @@ public:
     }
 
     void Inject(OGLProgram&& program) {
+        SetShaderUniformBlockBindings(program.handle);
+        SetShaderSamplerBindings(program.handle);
         shader_or_program = std::move(program);
     }
 
