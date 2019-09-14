@@ -145,6 +145,9 @@ void EmuWindow::UpdateCurrentFramebufferLayout(unsigned width, unsigned height) 
         case Settings::LayoutOption::SingleScreen:
             layout = Layout::SingleFrameLayout(width, height, Settings::values.swap_screen);
             break;
+        case Settings::LayoutOption::MediumScreen:
+            layout = Layout::MediumFrameLayout(width, height, Settings::values.swap_screen);
+            break;
         case Settings::LayoutOption::LargeScreen:
             layout = Layout::LargeFrameLayout(width, height, Settings::values.swap_screen);
             break;
