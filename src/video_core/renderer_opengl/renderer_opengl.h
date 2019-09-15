@@ -45,7 +45,7 @@ public:
     void SwapBuffers() override;
 
     /// Initialize the renderer
-    Core::System::ResultStatus Init() override;
+    VideoCore::ResultStatus Init() override;
 
     /// Shutdown the renderer
     void ShutDown() override;

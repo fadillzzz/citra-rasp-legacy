@@ -102,6 +102,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QCheckBox" name="toggle_disk_cache">
+        <property name="text">
+         <string>Reduce Stuttering by Saving Shaders to Disk</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

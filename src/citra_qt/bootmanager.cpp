@@ -9,13 +9,12 @@
 #include "common/microprofile.h"
 #include "common/scm_rev.h"
 #include "core/3ds.h"
-#include "core/core.h"
 #include "core/settings.h"
 #include "input_common/keyboard.h"
 #include "input_common/main.h"
 #include "input_common/motion_emu.h"
 #include "network/network.h"
-#include "video_core/video_core.h"
+#include "video_core/renderer_base.h"
 
 EmuThread::EmuThread(GRenderWindow* render_window) : render_window(render_window) {}
 
@@ -25,6 +24,12 @@ void EmuThread::run() {
     render_window->MakeCurrent();
 
     MicroProfileOnThreadCreate("EmuThread");
+
+    Core::System::GetInstance().Renderer().Rasterizer()->LoadDiskResources(
+        stop_run, [this](VideoCore::LoadCallbackStage stage, std::size_t value, std::size_t total) {
+            LOG_DEBUG(Frontend, "Loading stage {} progress {} {}", static_cast<u32>(stage), value,
+                      total);
+        });
 
     // Holds whether the cpu was running during the last iteration,
     // so that the DebugModeLeft signal can be emitted before the
