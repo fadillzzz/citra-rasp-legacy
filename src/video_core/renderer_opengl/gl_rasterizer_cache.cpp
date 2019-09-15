@@ -1522,6 +1522,7 @@ Surface RasterizerCacheOpenGL::GetTextureSurface(const Pica::Texture::TextureInf
         auto format_tuple = GetFormatTuple(params.pixel_format);
 
         // Allocate more mipmap level if necessary
+        if (Settings::values.Mipmaps) {
         if (surface->max_level < max_level) {
             state.texture_units[0].texture_2d = surface->texture.handle;
             state.Apply();
@@ -1546,6 +1547,7 @@ Surface RasterizerCacheOpenGL::GetTextureSurface(const Pica::Texture::TextureInf
             }
             surface->max_level = max_level;
         }
+    }
 
         // Blit mipmaps that have been invalidated
         state.draw.read_framebuffer = read_framebuffer.handle;

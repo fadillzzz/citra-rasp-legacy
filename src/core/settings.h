@@ -151,6 +151,7 @@ struct Values {
     u16 frame_limit;
     bool FMV_hack;
     u16 AddTicks;
+    bool Mipmaps;
 
     LayoutOption layout_option;
     bool swap_screen;

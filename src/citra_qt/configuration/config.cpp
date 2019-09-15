@@ -172,6 +172,7 @@ void Config::ReadValues() {
     Settings::values.frame_limit = ReadSetting("frame_limit", 100).toInt();
     Settings::values.FMV_hack = ReadSetting("FMV_hack", false).toBool();
     Settings::values.AddTicks = ReadSetting("AddTicks", 77).toInt();
+    Settings::values.Mipmaps = ReadSetting("Mipmaps", true).toBool();
 
     Settings::values.bg_red = ReadSetting("bg_red", 0.0).toFloat();
     Settings::values.bg_green = ReadSetting("bg_green", 0.0).toFloat();
@@ -484,6 +485,7 @@ void Config::SaveValues() {
     WriteSetting("frame_limit", Settings::values.frame_limit, 100);
     WriteSetting("FMV_hack", Settings::values.FMV_hack, false);
     WriteSetting("AddTicks", Settings::values.AddTicks, 77);
+    WriteSetting("Mipmaps", Settings::values.Mipmaps, true);
 
     // Cast to double because Qt's written float values are not human-readable
     WriteSetting("bg_red", (double)Settings::values.bg_red, 0.0);

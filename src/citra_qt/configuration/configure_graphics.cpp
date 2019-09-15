@@ -17,6 +17,7 @@ ConfigureGraphics::ConfigureGraphics(QWidget* parent)
     ui->setupUi(this);
     SetConfiguration();
 
+    ui->Mipmaps->setEnabled(!Core::System::GetInstance().IsPoweredOn());
     ui->hw_renderer_group->setEnabled(ui->toggle_hw_renderer->isChecked());
     connect(ui->toggle_hw_renderer, &QCheckBox::toggled, this, [this] {
         auto checked = ui->toggle_hw_renderer->isChecked();
@@ -47,6 +48,7 @@ void ConfigureGraphics::SetConfiguration() {
     ui->toggle_accurate_mul->setChecked(Settings::values.shaders_accurate_mul);
     ui->toggle_shader_jit->setChecked(Settings::values.use_shader_jit);
     ui->toggle_disk_cache->setChecked(Settings::values.use_disk_shader_cache);
+    ui->Mipmaps->setChecked(Settings::values.Mipmaps);
 }
 
 void ConfigureGraphics::ApplyConfiguration() {
@@ -55,6 +57,7 @@ void ConfigureGraphics::ApplyConfiguration() {
     Settings::values.shaders_accurate_mul = ui->toggle_accurate_mul->isChecked();
     Settings::values.use_shader_jit = ui->toggle_shader_jit->isChecked();
     Settings::values.use_disk_shader_cache = ui->toggle_disk_cache->isChecked();
+    Settings::values.Mipmaps = ui->Mipmaps->isChecked();
 }
 
 void ConfigureGraphics::RetranslateUI() {
