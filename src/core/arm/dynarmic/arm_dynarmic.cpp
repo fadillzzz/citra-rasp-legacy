@@ -15,6 +15,7 @@
 #include "core/gdbstub/gdbstub.h"
 #include "core/hle/kernel/svc.h"
 #include "core/memory.h"
+#include "core/settings.h"
 
 class DynarmicThreadContext final : public ARM_Interface::ThreadContext {
 public:
@@ -150,7 +151,11 @@ public:
     }
 
     void AddTicks(std::uint64_t ticks) override {
-        timing.AddTicks(ticks);
+        if (Settings::values.FMV_hack) {
+            timing.AddTicks(Settings::values.AddTicks);
+        } else {
+            timing.AddTicks(ticks);
+        }
     }
     std::uint64_t GetTicksRemaining() override {
         s64 ticks = timing.GetDowncount();

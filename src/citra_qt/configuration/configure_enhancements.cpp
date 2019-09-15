@@ -14,6 +14,9 @@ ConfigureEnhancements::ConfigureEnhancements(QWidget* parent)
     ui->setupUi(this);
     SetConfiguration();
 
+    ui->AddTicks->setEnabled(Settings::values.FMV_hack);
+    connect(ui->FMV_hack, &QCheckBox::toggled, ui->AddTicks, &QSpinBox::setEnabled);
+
     ui->layoutBox->setEnabled(!Settings::values.custom_layout);
 
     ui->resolution_factor_combobox->setEnabled(Settings::values.use_hw_renderer);
@@ -62,6 +65,8 @@ void ConfigureEnhancements::SetConfiguration() {
     pixmap.fill(bg_color);
     const QIcon color_icon(pixmap);
     ui->bg_button->setIcon(color_icon);
+    ui->FMV_hack->setChecked(Settings::values.FMV_hack);
+    ui->AddTicks->setValue(Settings::values.AddTicks);
 }
 
 void ConfigureEnhancements::updateShaders(bool anaglyph) {
@@ -88,6 +93,8 @@ void ConfigureEnhancements::RetranslateUI() {
 void ConfigureEnhancements::ApplyConfiguration() {
     Settings::values.resolution_factor =
         static_cast<u16>(ui->resolution_factor_combobox->currentIndex());
+    Settings::values.FMV_hack = ui->FMV_hack->isChecked();
+    Settings::values.AddTicks = ui->AddTicks->value();
     Settings::values.render_3d =
         static_cast<Settings::StereoRenderOption>(ui->render_3d_combobox->currentIndex());
     Settings::values.factor_3d = ui->factor_3d->value();
