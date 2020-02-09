@@ -158,6 +158,7 @@ private slots:
     void OnGameListOpenFolder(u64 program_id, GameListOpenTarget target);
     void OnGameListNavigateToGamedbEntry(u64 program_id,
                                          const CompatibilityList& compatibility_list);
+    void OnGameListDumpRomFS(QString game_path, u64 program_id);
     void OnGameListOpenDirectory(QString path);
     void OnGameListAddDirectory();
     void OnGameListShowList(bool show);

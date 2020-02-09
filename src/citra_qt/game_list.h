@@ -81,6 +81,7 @@ signals:
     void OpenFolderRequested(u64 program_id, GameListOpenTarget target);
     void NavigateToGamedbEntryRequested(u64 program_id,
                                         const CompatibilityList& compatibility_list);
+    void DumpRomFSRequested(QString game_path, u64 program_id);
     void OpenDirectory(QString directory);
     void AddDirectory();
     void ShowList(bool show);
