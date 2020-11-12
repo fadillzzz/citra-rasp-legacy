@@ -34,8 +34,6 @@ if (MSVC)
     add_compile_options(
         /W3
         /MP
-        /Zi
-        /Zo
         /permissive-
         /EHsc
         /std:c++latest
@@ -44,6 +42,15 @@ if (MSVC)
         /Zc:inline
         /Zc:throwingNew
     )
+
+    # Since MSVC's debugging information is not very deterministic, so we have to disable it
+    # when using ccache or other caching tools
+    if (NOT USE_CCACHE)
+        add_compile_options(
+            /Zi
+            /Zo
+        )
+    endif()
 
     # /GS- - No stack buffer overflow checks
     add_compile_options("$<$<CONFIG:Release>:/GS->")
