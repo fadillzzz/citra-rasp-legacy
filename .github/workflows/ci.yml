@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         image: ["linux-clang-format", "linux-fresh", "linux-frozen", "linux-mingw"]
-    container: citraemu/build-environments:${{ matrix.image }}
+    container: fadillzzz/rasp-build-env:${{ matrix.image }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -98,7 +98,7 @@ jobs:
           ENABLE_COMPATIBILITY_REPORTING: "ON"
   transifex:
     runs-on: ubuntu-latest
-    container: citraemu/build-environments:linux-transifex
+    container: fadillzzz/rasp-build-env:linux-transifex
     if: ${{ github.repository == 'citra-emu/citra' && !github.head_ref }}
     steps:
       - uses: actions/checkout@v2
