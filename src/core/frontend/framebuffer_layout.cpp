@@ -115,8 +115,7 @@ FramebufferLayout MediumFrameLayout(u32 width, u32 height, bool swapped) {
     Common::Rectangle<unsigned> screen_window_area{0, 0, width, height};
     Common::Rectangle<unsigned> total_rect =
         maxRectangle(screen_window_area, emulation_aspect_ratio);
-    Common::Rectangle<unsigned> large_screen =
-        maxRectangle(total_rect, large_screen_aspect_ratio);
+    Common::Rectangle<unsigned> large_screen = maxRectangle(total_rect, large_screen_aspect_ratio);
     Common::Rectangle<unsigned> fourth_size_rect = total_rect.Scale(.55f);
     Common::Rectangle<unsigned> small_screen =
         maxRectangle(fourth_size_rect, small_screen_aspect_ratio);

@@ -1969,7 +1969,7 @@ void GMainWindow::SyncMenuUISettings() {
     ui.action_Screen_Layout_Single_Screen->setChecked(Settings::values.layout_option ==
                                                       Settings::LayoutOption::SingleScreen);
     ui.action_Screen_Layout_Medium_Screen->setChecked(Settings::values.layout_option ==
-                                                     Settings::LayoutOption::MediumScreen);
+                                                      Settings::LayoutOption::MediumScreen);
     ui.action_Screen_Layout_Large_Screen->setChecked(Settings::values.layout_option ==
                                                      Settings::LayoutOption::LargeScreen);
     ui.action_Screen_Layout_Side_by_Side->setChecked(Settings::values.layout_option ==

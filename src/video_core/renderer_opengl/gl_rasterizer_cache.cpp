@@ -1523,31 +1523,32 @@ Surface RasterizerCacheOpenGL::GetTextureSurface(const Pica::Texture::TextureInf
 
         // Allocate more mipmap level if necessary
         if (Settings::values.Mipmaps) {
-        if (surface->max_level < max_level) {
-            state.texture_units[0].texture_2d = surface->texture.handle;
-            state.Apply();
-            glActiveTexture(GL_TEXTURE0);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, max_level);
-            u32 width;
-            u32 height;
-            if (surface->is_custom) {
-                width = surface->custom_tex_info.width;
-                height = surface->custom_tex_info.height;
-            } else {
-                width = surface->width * surface->res_scale;
-                height = surface->height * surface->res_scale;
+            if (surface->max_level < max_level) {
+                state.texture_units[0].texture_2d = surface->texture.handle;
+                state.Apply();
+                glActiveTexture(GL_TEXTURE0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, max_level);
+                u32 width;
+                u32 height;
+                if (surface->is_custom) {
+                    width = surface->custom_tex_info.width;
+                    height = surface->custom_tex_info.height;
+                } else {
+                    width = surface->width * surface->res_scale;
+                    height = surface->height * surface->res_scale;
+                }
+                for (u32 level = surface->max_level + 1; level <= max_level; ++level) {
+                    glTexImage2D(GL_TEXTURE_2D, level, format_tuple.internal_format, width >> level,
+                                 height >> level, 0, format_tuple.format, format_tuple.type,
+                                 nullptr);
+                }
+                if (surface->is_custom) {
+                    // TODO: proper mipmap support for custom textures
+                    glGenerateMipmap(GL_TEXTURE_2D);
+                }
+                surface->max_level = max_level;
             }
-            for (u32 level = surface->max_level + 1; level <= max_level; ++level) {
-                glTexImage2D(GL_TEXTURE_2D, level, format_tuple.internal_format, width >> level,
-                             height >> level, 0, format_tuple.format, format_tuple.type, nullptr);
-            }
-            if (surface->is_custom) {
-                // TODO: proper mipmap support for custom textures
-                glGenerateMipmap(GL_TEXTURE_2D);
-            }
-            surface->max_level = max_level;
         }
-    }
 
         // Blit mipmaps that have been invalidated
         state.draw.read_framebuffer = read_framebuffer.handle;
