@@ -99,6 +99,7 @@ void LogSettings() {
     log_setting("Layout_UprightScreen", values.upright_screen);
     log_setting("Utility_DumpTextures", values.dump_textures);
     log_setting("Utility_CustomTextures", values.custom_textures);
+    log_setting("Utility_PreloadTexturesDirectory", values.preload_textures_dir);
     log_setting("Utility_UseDiskShaderCache", values.use_disk_shader_cache);
     log_setting("Audio_EnableDspLle", values.enable_dsp_lle);
     log_setting("Audio_EnableDspLleMultithread", values.enable_dsp_lle_multithread);

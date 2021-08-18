@@ -311,14 +311,40 @@ System::ResultStatus System::Load(Frontend::EmuWindow& emu_window, const std::st
     perf_stats = std::make_unique<PerfStats>(title_id);
     custom_tex_cache = std::make_unique<Core::CustomTexCache>();
 
-    if (Settings::values.custom_textures) {
-        const u64 program_id = Kernel().GetCurrentProcess()->codeset->program_id;
-        FileUtil::CreateFullPath(fmt::format(
-            "{}textures/{:016X}/", FileUtil::GetUserPath(FileUtil::UserPath::LoadDir), program_id));
-        custom_tex_cache->FindCustomTextures(program_id);
-    }
-    if (Settings::values.preload_textures) {
+    const std::string_view preload_dir = Settings::values.preload_textures_dir;
+    const std::string_view load_dir = FileUtil::GetUserPath(FileUtil::UserPath::LoadDir);
+
+    const std::string sanitized_preload_dir = FileUtil::SanitizePath(preload_dir);
+    const std::string sanitized_load_dir = FileUtil::SanitizePath(load_dir);
+
+    const u64 program_id = Kernel().GetCurrentProcess()->codeset->program_id;
+
+    if (sanitized_load_dir != sanitized_preload_dir && Settings::values.custom_textures &&
+        Settings::values.preload_textures) {
+        LOG_INFO(Core,
+                 "Using alternative strategy for preloading textures. Texture preload base "
+                 "directory is {}",
+                 sanitized_preload_dir);
+
+        const std::string preload_path =
+            fmt::format("{}/textures/{:016X}/", sanitized_preload_dir, program_id);
+        FileUtil::CreateFullPath(preload_path);
+        custom_tex_cache->FindCustomTextures(preload_path);
+
         custom_tex_cache->PreloadTextures(*GetImageInterface());
+
+        FileUtil::CreateFullPath(
+            fmt::format("{}/textures/{:016X}/", sanitized_load_dir, program_id));
+        custom_tex_cache->FindCustomTextures(program_id);
+    } else {
+        if (Settings::values.custom_textures) {
+            FileUtil::CreateFullPath(
+                fmt::format("{}/textures/{:016X}/", sanitized_load_dir, program_id));
+            custom_tex_cache->FindCustomTextures(program_id);
+        }
+        if (Settings::values.preload_textures) {
+            custom_tex_cache->PreloadTextures(*GetImageInterface());
+        }
     }
 
     status = ResultStatus::Success;

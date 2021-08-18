@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <QColorDialog>
+#include <QFileDialog>
 #include "citra_qt/configuration/configure_enhancements.h"
 #include "core/core.h"
 #include "core/settings.h"
@@ -47,6 +48,17 @@ ConfigureEnhancements::ConfigureEnhancements(QWidget* parent)
         if (!ui->toggle_preload_textures->isEnabled())
             ui->toggle_preload_textures->setChecked(false);
     });
+
+    connect(ui->change_preload_dir, &QPushButton::clicked, this, [this]() {
+        const QString dir_path = QFileDialog::getExistingDirectory(
+            this, tr("Select Preload Directory"),
+            QString::fromStdString(Settings::values.preload_textures_dir),
+            QFileDialog::ShowDirsOnly);
+        if (!dir_path.isEmpty()) {
+            Settings::values.preload_textures_dir = dir_path.toStdString();
+            SetConfiguration();
+        }
+    });
 }
 
 void ConfigureEnhancements::SetConfiguration() {
@@ -68,6 +80,8 @@ void ConfigureEnhancements::SetConfiguration() {
     ui->toggle_dump_textures->setChecked(Settings::values.dump_textures);
     ui->toggle_custom_textures->setChecked(Settings::values.custom_textures);
     ui->toggle_preload_textures->setChecked(Settings::values.preload_textures);
+    QString preload_path = QString::fromStdString(Settings::values.preload_textures_dir);
+    ui->preload_dir_path->setText(preload_path);
     bg_color = QColor::fromRgbF(Settings::values.bg_red, Settings::values.bg_green,
                                 Settings::values.bg_blue);
     QPixmap pixmap(ui->bg_button->size());
