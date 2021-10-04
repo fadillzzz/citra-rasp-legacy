@@ -83,9 +83,41 @@ const std::array<UISettings::Shortcut, 21> default_hotkeys{
 void Config::ReadValues() {
     qt_config->beginGroup("Controls");
 
+    int num_touch_from_button_maps =
+        qt_config->beginReadArray(QStringLiteral("touch_from_button_maps"));
+
+    if (num_touch_from_button_maps > 0) {
+        const auto append_touch_from_button_map = [this] {
+            Settings::TouchFromButtonMap map;
+            map.name = ReadSetting(QStringLiteral("name"), QStringLiteral("default"))
+                           .toString()
+                           .toStdString();
+            const int num_touch_maps = qt_config->beginReadArray(QStringLiteral("entries"));
+            map.buttons.reserve(num_touch_maps);
+            for (int i = 0; i < num_touch_maps; i++) {
+                                qt_config->setArrayIndex(i);
+                std::string touch_mapping =
+                    ReadSetting(QStringLiteral("bind")).toString().toStdString();
+                map.buttons.emplace_back(std::move(touch_mapping));
+            }
+            qt_config->endArray(); // entries
+            Settings::values.touch_from_button_maps.emplace_back(std::move(map));
+        };
+
+        for (int i = 0; i < num_touch_from_button_maps; ++i) {
+            qt_config->setArrayIndex(i);
+            append_touch_from_button_map();
+        }
+    } else {
+        Settings::values.touch_from_button_maps.emplace_back(
+            Settings::TouchFromButtonMap{"default", {}});
+        num_touch_from_button_maps = 1;
+    }
+    qt_config->endArray();
+
     Settings::values.current_input_profile_index = ReadSetting("profile", 0).toInt();
 
-    const auto append_profile = [this] {
+    const auto append_profile = [this, num_touch_from_button_maps] {
         Settings::InputProfile profile;
         profile.name = ReadSetting("name", "default").toString().toStdString();
         for (int i = 0; i < Settings::NativeButton::NumButtons; ++i) {
@@ -115,6 +147,12 @@ void Config::ReadValues() {
                 .toStdString();
         profile.touch_device =
             ReadSetting("touch_device", "engine:emu_window").toString().toStdString();
+        profile.use_touch_from_button =
+            ReadSetting(QStringLiteral("use_touch_from_button"), false).toBool();
+        profile.touch_from_button_map_index =
+            ReadSetting(QStringLiteral("touch_from_button_map"), 0).toInt();
+        profile.touch_from_button_map_index =
+            std::clamp(profile.touch_from_button_map_index, 0, num_touch_from_button_maps - 1);
         profile.udp_input_address =
             ReadSetting("udp_input_address", InputCommon::CemuhookUDP::DEFAULT_ADDR)
                 .toString()
@@ -460,6 +498,9 @@ void Config::SaveValues() {
                      "engine:motion_emu,update_period:100,sensitivity:0.01,tilt_clamp:90.0");
         WriteSetting("touch_device", QString::fromStdString(profile.touch_device),
                      "engine:emu_window");
+        WriteSetting(QStringLiteral("use_touch_from_button"), profile.use_touch_from_button, false);
+        WriteSetting(QStringLiteral("touch_from_button_map"), profile.touch_from_button_map_index,
+                     0);
         WriteSetting("udp_input_address", QString::fromStdString(profile.udp_input_address),
                      InputCommon::CemuhookUDP::DEFAULT_ADDR);
         WriteSetting("udp_input_port", profile.udp_input_port,
@@ -467,6 +508,22 @@ void Config::SaveValues() {
         WriteSetting("udp_pad_index", profile.udp_pad_index, 0);
     }
     qt_config->endArray();
+
+    qt_config->beginWriteArray(QStringLiteral("touch_from_button_maps"));
+    for (std::size_t p = 0; p < Settings::values.touch_from_button_maps.size(); ++p) {
+        qt_config->setArrayIndex(static_cast<int>(p));
+        const auto& map = Settings::values.touch_from_button_maps[p];
+        WriteSetting(QStringLiteral("name"), QString::fromStdString(map.name),
+                     QStringLiteral("default"));
+        qt_config->beginWriteArray(QStringLiteral("entries"));
+        for (std::size_t q = 0; q < map.buttons.size(); ++q) {
+            qt_config->setArrayIndex(static_cast<int>(q));
+            WriteSetting(QStringLiteral("bind"), QString::fromStdString(map.buttons[q]));
+        }
+        qt_config->endArray();
+    }
+    qt_config->endArray();
+
     qt_config->endGroup();
 
     qt_config->beginGroup("Core");

@@ -1233,3 +1233,8 @@ QDateEdit::down-arrow:hover,
 QDateEdit::down-arrow:focus {
     image: url(:/qss_icons/rc/down_arrow.png);
 }
+
+/* touchscreen mapping widget */
+TouchScreenPreview {
+    qproperty-dotHighlightColor: #3daee9;
+}
