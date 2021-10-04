@@ -95,7 +95,7 @@ void Config::ReadValues() {
             const int num_touch_maps = qt_config->beginReadArray(QStringLiteral("entries"));
             map.buttons.reserve(num_touch_maps);
             for (int i = 0; i < num_touch_maps; i++) {
-                                qt_config->setArrayIndex(i);
+                qt_config->setArrayIndex(i);
                 std::string touch_mapping =
                     ReadSetting(QStringLiteral("bind")).toString().toStdString();
                 map.buttons.emplace_back(std::move(touch_mapping));
