@@ -342,6 +342,7 @@ private:
     std::unique_ptr<Input::AnalogDevice> circle_pad;
     std::unique_ptr<Input::MotionDevice> motion_device;
     std::unique_ptr<Input::TouchDevice> touch_device;
+    std::unique_ptr<Input::TouchDevice> touch_btn_device;
 };
 
 std::shared_ptr<Module> GetModule(Core::System& system);
