@@ -37,7 +37,8 @@ public:
     void CacheTexture(u64 hash, const std::vector<u8>& tex, u32 width, u32 height);
 
     void AddTexturePath(u64 hash, const std::string& path);
-    void FindCustomTextures();
+    void FindCustomTextures(const std::string& path);
+    void FindCustomTextures(u64 program_id);
     void PreloadTextures();
     bool CustomTextureExists(u64 hash) const;
     const CustomTexPathInfo& LookupTexturePathInfo(u64 hash) const;

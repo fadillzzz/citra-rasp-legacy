@@ -194,6 +194,10 @@ custom_textures =
 # 0 (default): Off, 1: On
 preload_textures =
 
+# Directory to use for preloading textures
+# empty (default) will use the load directory
+preload_textures_directory =
+
 [Audio]
 # Whether or not to enable DSP LLE
 # 0 (default): No, 1: Yes

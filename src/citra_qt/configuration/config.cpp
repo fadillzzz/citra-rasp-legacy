@@ -247,6 +247,12 @@ void Config::ReadValues() {
     Settings::values.dump_textures = ReadSetting("dump_textures", false).toBool();
     Settings::values.custom_textures = ReadSetting("custom_textures", false).toBool();
     Settings::values.preload_textures = ReadSetting("preload_textures", false).toBool();
+    std::string preload_dir = FileUtil::GetUserPath(FileUtil::UserPath::LoadDir);
+    Settings::values.preload_textures_dir =
+        ReadSetting(QStringLiteral("preload_textures_directory"),
+                    QString::fromStdString(preload_dir))
+            .toString()
+            .toStdString();
     qt_config->endGroup();
 
     qt_config->beginGroup("Audio");
@@ -575,6 +581,9 @@ void Config::SaveValues() {
     WriteSetting("dump_textures", Settings::values.dump_textures, false);
     WriteSetting("custom_textures", Settings::values.custom_textures, false);
     WriteSetting("preload_textures", Settings::values.preload_textures, false);
+    WriteSetting(QStringLiteral("preload_textures_directory"),
+                 QString::fromStdString(Settings::values.preload_textures_dir),
+                 QString::fromStdString(FileUtil::GetUserPath(FileUtil::UserPath::LoadDir)));
     qt_config->endGroup();
 
     qt_config->beginGroup("Audio");
