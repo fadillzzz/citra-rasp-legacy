@@ -76,13 +76,12 @@ void CustomTexCache::FindCustomTextures(u64 program_id) {
     return FindCustomTextures(load_path);
 }
 
-void CustomTexCache::PreloadTextures() {
+void CustomTexCache::PreloadTextures(Frontend::ImageInterface& image_interface) {
     for (const auto& path : custom_texture_paths) {
-        const auto& image_interface = Core::System::GetInstance().GetImageInterface();
         const auto& path_info = path.second;
         Core::CustomTexInfo tex_info;
-        if (image_interface->DecodePNG(tex_info.tex, tex_info.width, tex_info.height,
-                                       path_info.path)) {
+        if (image_interface.DecodePNG(tex_info.tex, tex_info.width, tex_info.height,
+                                      path_info.path)) {
             // Make sure the texture size is a power of 2
             if ((ceil(log2(tex_info.width)) == floor(log2(tex_info.width))) &&
                 (ceil(log2(tex_info.height)) == floor(log2(tex_info.height)))) {
