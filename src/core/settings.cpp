@@ -90,6 +90,7 @@ void LogSettings() {
     LogSetting("Layout_SwapScreen", Settings::values.swap_screen);
     LogSetting("Utility_DumpTextures", Settings::values.dump_textures);
     LogSetting("Utility_CustomTextures", Settings::values.custom_textures);
+    LogSetting("Utility_PreloadTexturesDirectory", values.preload_textures_dir);
     LogSetting("Audio_EnableDspLle", Settings::values.enable_dsp_lle);
     LogSetting("Audio_EnableDspLleMultithread", Settings::values.enable_dsp_lle_multithread);
     LogSetting("Audio_OutputEngine", Settings::values.sink_id);

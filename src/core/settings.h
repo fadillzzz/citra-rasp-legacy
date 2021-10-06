@@ -186,6 +186,7 @@ struct Values {
     bool dump_textures;
     bool custom_textures;
     bool preload_textures;
+    std::string preload_textures_dir;
 
     // Audio
     bool enable_dsp_lle;
