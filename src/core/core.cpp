@@ -390,6 +390,7 @@ void System::Shutdown() {
     perf_stats.reset();
     rpc_server.reset();
     cheat_engine.reset();
+    archive_manager.reset();
     service_manager.reset();
     dsp_core.reset();
     cpu_core.reset();
