@@ -71,11 +71,11 @@ void DirectConnectWindow::Connect() {
         }
     }
     if (!ui->ip->hasAcceptableInput()) {
-        NetworkMessage::ErrorManager::ShowError(NetworkMessage::ErrorManager::IP_ADDRESS_NOT_VALID);
+        NetworkMessage::ShowError(NetworkMessage::IP_ADDRESS_NOT_VALID);
         return;
     }
     if (!ui->port->hasAcceptableInput()) {
-        NetworkMessage::ErrorManager::ShowError(NetworkMessage::ErrorManager::PORT_NOT_VALID);
+        NetworkMessage::ShowError(NetworkMessage::PORT_NOT_VALID);
         return;
     }
 
